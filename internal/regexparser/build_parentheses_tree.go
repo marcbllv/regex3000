@@ -33,9 +33,9 @@ func buildParenthesesTree(regex string) *TernaryNode {
             middleSubstr := regex[pos + 1:rightPar]
             rightSubstr := regex[rightPar + 1:]
 
-            leftNode := buildParenthesesSubTree(leftSubstr)
-            middleNode := buildParenthesesSubTree(middleSubstr)
-            rightNode := buildParenthesesSubTree(rightSubstr)
+            leftNode := buildParenthesesTree(leftSubstr)
+            middleNode := buildParenthesesTree(middleSubstr)
+            rightNode := buildParenthesesTree(rightSubstr)
 
             tree.LeftChild = leftNode
             tree.MiddleChild = middleNode
