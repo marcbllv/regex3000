@@ -26,6 +26,11 @@ func NewLeafTernaryNode(value string, pos int) TernaryNode {
 }
 
 
-func IsLeafTernaryNode(node *TernaryNode) bool {
+func isLeafTernaryNode(node TernaryNode) bool {
 	return (node.LeftChild == nil) && (node.MiddleChild == nil) && (node.RightChild == nil)
+}
+
+
+func getChildren(tree TernaryNode) []*TernaryNode {
+	return []*TernaryNode{tree.LeftChild, tree.MiddleChild, tree.RightChild}
 }
