@@ -1,7 +1,5 @@
 package regexparser
 
-import "fmt"
-
 func findMatchingParenthese(s string, openParPos int) int {
     count := 0
     substr := s[openParPos+ 1:]
@@ -36,30 +34,4 @@ func BuildParenthesesTree(regex string) *TernaryNode {
         }
     }
     return &tree
-}
-
-
-func DisplayParenthesesTree(tree *TernaryNode) {
-    fmt.Println("VALUE:", tree.Value)
-    fmt.Print("Left child ")
-    if tree.LeftChild != nil {
-        fmt.Println(tree.LeftChild.Value)
-        DisplayParenthesesTree(tree.LeftChild)
-    } else {
-        fmt.Println("no left child")
-    }
-    fmt.Print("Middle child ")
-    if tree.MiddleChild != nil {
-        fmt.Println(tree.MiddleChild.Value)
-        DisplayParenthesesTree(tree.MiddleChild)
-    } else {
-        fmt.Println("no middle child")
-    }
-    fmt.Print("Right child ")
-    if tree.RightChild != nil {
-        fmt.Println(tree.RightChild.Value)
-        DisplayParenthesesTree(tree.RightChild)
-    } else {
-        fmt.Println("no right child")
-    }
 }
