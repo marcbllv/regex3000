@@ -18,34 +18,20 @@ func findMatchingParenthese(s string, openParPos int) int {
         }
     }
     // error
-    // todo: Raise something properly
+    // todo: Raise error properly
     return -1
 }
 
 
 func BuildParenthesesTree(regex string) *TernaryNode {
-    var tree TernaryNode
-    if len(regex) == 0 {
-        tree = NewLeafTernaryNode("", 0)
-        return &tree
-    }
+    var tree = NewRootTernaryNode(regex)
 
-    tree = NewRootTernaryNode(regex)
     for pos, char := range regex {
         if char == '(' {
-            rightPar := findMatchingParenthese(regex, pos)
-
-            leftSubstr := regex[:pos]
-            middleSubstr := regex[pos + 1:rightPar]
-            rightSubstr := regex[rightPar + 1:]
-
-            leftNode := BuildParenthesesTree(leftSubstr)
-            middleNode := BuildParenthesesTree(middleSubstr)
-            rightNode := BuildParenthesesTree(rightSubstr)
-
-            tree.LeftChild = leftNode
-            tree.MiddleChild = middleNode
-            tree.RightChild = rightNode
+            closingParenthesis := findMatchingParenthese(regex, pos)
+            tree.LeftChild = BuildParenthesesTree(regex[:pos])
+            tree.MiddleChild = BuildParenthesesTree(regex[pos + 1: closingParenthesis])
+            tree.RightChild = BuildParenthesesTree(regex[closingParenthesis+ 1:])
             break
         }
     }
