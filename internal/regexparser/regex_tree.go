@@ -2,16 +2,12 @@ package regexparser
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
 type RegexTree struct {
 	root Node
-}
-
-
-func isSpecialChar(char uint8) bool {
-	return strings.ContainsRune("|()", rune(char))
 }
 
 
@@ -37,6 +33,19 @@ func buildSubRegexTree(regex string) *Node {
 			disjunctionNode.Children = append(disjunctionNode.Children, rootNode, rightSideNode)
 			rootNode = &disjunctionNode
 			pointer = len(regex)
+		} else if char == '{' {
+			nextBrace := findMatchingBrace(regex, pointer)
+			innerContent := regex[pointer + 1:nextBrace]
+			repeats := strings.Split(innerContent, ",")
+
+			lastItem := rootNode.Children[len(rootNode.Children) - 1]
+			lastItem.RepeatMin, _ = strconv.Atoi(repeats[0])
+			if len(repeats) == 1 {
+				lastItem.RepeatMax, _ = strconv.Atoi(repeats[0])
+			} else if len(repeats) == 2 {
+				lastItem.RepeatMax, _ = strconv.Atoi(repeats[1])
+			}
+			pointer = nextBrace + 1
 		} else {
 			charNode := NewNode(string(char), "")
 			rootNode.Children = append(rootNode.Children, &charNode)
@@ -54,7 +63,7 @@ func BuildRegexTree(regex string) Node {
 
 
 func DisplayRegexTree(tree Node) {
-	fmt.Printf("Tree %s, type '%s'\n", tree.Value, tree.Type)
+	fmt.Printf("Tree %s, type '%s', repeat %d-%d\n", tree.Value, tree.Type, tree.RepeatMin, tree.RepeatMax)
 	if len(tree.Children) == 0 {
 		return
 	}

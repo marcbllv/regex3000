@@ -45,5 +45,4 @@ func checkRegexTreeMatch(regexTree Node, str string) []string {
 		}
 		return remainingStrings
 	}
-	return []string{}
 }
