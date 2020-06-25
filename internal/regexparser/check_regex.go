@@ -5,77 +5,45 @@ import (
 )
 
 func CheckRegexMatch(regex string, str string) bool {
-	var parenthesesTree = BuildParenthesesTree(regex)
-	var matchingPositions = checkParenthesesSubStrRegexMatch(parenthesesTree, str)
-
-	for _, matchingPosition := range matchingPositions {
-		if len(str) == matchingPosition {
+	regexTree := BuildRegexTree(regex)
+	remainingStr := checkRegexTreeMatch(regexTree, str)
+	for _, str := range remainingStr {
+		if str == "" {
 			return true
 		}
 	}
 	return false
 }
 
-
-func checkParenthesesSubStrRegexMatch(parenthesesTree *TernaryNode, str string) []int {
-	if parenthesesTree == nil {
-		return []int{0}
-	}
-	if isLeafTernaryNode(*parenthesesTree) {
-		return matchSimpleRegex(parenthesesTree.Value, str)
-	}
-
-	matchingPositions := []int{0}
-	var childTreeMatchinPositions []int
-	// Loop over left, middle and right subtrees
-	for _, childTree := range getChildren(*parenthesesTree) {
-		childTreeMatchinPositions = []int{}
-		for _, matchingPosition := range matchingPositions {
-			subString := str[matchingPosition:]
-			newMatchingPositions := checkParenthesesSubStrRegexMatch(childTree, subString)
-			for _, newMatchingPosition := range newMatchingPositions {
-				childTreeMatchinPositions = append(childTreeMatchinPositions, matchingPosition + newMatchingPosition)
+func checkRegexTreeMatch(regexTree Node, str string) []string {
+	if regexTree.Type == "|" {
+		// Disjunction
+		var allRemainingStr []string
+		for _, childTree := range regexTree.Children {
+			remainingStr := checkRegexTreeMatch(*childTree, str)
+			allRemainingStr = append(allRemainingStr, remainingStr...)
+		}
+		return allRemainingStr
+	} else if len(regexTree.Children) > 0 {
+		// Concatenation of all children
+		substrs := []string{str}
+		for _, child := range regexTree.Children {
+			var newRemainingStrings []string
+			for _, substr := range substrs {
+				remainingStrings := checkRegexTreeMatch(*child, substr)
+				newRemainingStrings = append(newRemainingStrings, remainingStrings...)
 			}
+			substrs = newRemainingStrings
 		}
-		matchingPositions = childTreeMatchinPositions
-	}
-	return matchingPositions
-}
-
-
-func matchSimpleRegex(regex string, str string) []int {
-	disjuctionTree := buildDisjunctionTree(regex)
-	return matchDisjunctionFromTree(disjuctionTree, str)
-}
-
-
-func matchDisjunctionFromTree(disjunctionTree BinaryNode, str string) []int {
-	var matchingPositions []int
-	if isLeafBinaryNode(disjunctionTree) {
-		matchingPosition := matchPrefixString(disjunctionTree.Value, str)
-		if matchingPosition >= 0 {
-			return []int{matchingPosition}
-		} else {
-			return []int{}
-		}
-	}
-
-	if disjunctionTree.LeftChild != nil {
-		leftMatchingPositions := matchDisjunctionFromTree(*disjunctionTree.LeftChild, str)
-		matchingPositions = append(matchingPositions, leftMatchingPositions...)
-	}
-	if disjunctionTree.RightChild != nil {
-		rightMatchingPositions := matchDisjunctionFromTree(*disjunctionTree.RightChild, str)
-		matchingPositions = append(matchingPositions, rightMatchingPositions...)
-	}
-	return matchingPositions
-}
-
-
-func matchPrefixString(regex string, str string) int {
-	if strings.HasPrefix(str, regex) {
-		return len(regex)
+		return substrs
 	} else {
-		return -1
+		// Simple string equality, no special chars
+		var remainingStrings []string
+		if strings.HasPrefix(str, regexTree.Value) {
+			remainingStr := strings.TrimPrefix(str, regexTree.Value)
+			remainingStrings = append(remainingStrings, remainingStr)
+		}
+		return remainingStrings
 	}
+	return []string{}
 }

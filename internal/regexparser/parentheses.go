@@ -21,17 +21,9 @@ func findMatchingParenthese(s string, openParPos int) int {
 }
 
 
-func BuildParenthesesTree(regex string) *TernaryNode {
-    var tree = NewRootTernaryNode(regex)
-
-    for pos, char := range regex {
-        if char == '(' {
-            closingParenthesis := findMatchingParenthese(regex, pos)
-            tree.LeftChild = BuildParenthesesTree(regex[:pos])
-            tree.MiddleChild = BuildParenthesesTree(regex[pos + 1: closingParenthesis])
-            tree.RightChild = BuildParenthesesTree(regex[closingParenthesis+ 1:])
-            break
-        }
-    }
-    return &tree
+func buildParenthesesSubTree(regex string, pointer int) (int, *Node) {
+    closingParenthesis := findMatchingParenthese(regex, pointer)
+    innerContent := regex[pointer + 1:closingParenthesis]
+    node := buildSubRegexTree(innerContent)
+    return closingParenthesis, node
 }
