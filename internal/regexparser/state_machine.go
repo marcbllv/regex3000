@@ -16,7 +16,8 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 	//  - -- OK pipe operator
 	//  - -- OK ? * + operators
 	//  - -- OK parentheses
-	//  - braces
+	//  - WIP braces
+	//  - brackets
 	var currentState *State
 	var newState *State
 
