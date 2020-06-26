@@ -1,5 +1,10 @@
 package regexparser
 
+import (
+    "strconv"
+    "strings"
+)
+
 func findMatchingClosing(s string, openParPos int, open rune, closing rune) int {
     count := 0
     substr := s[openParPos+ 1:]
@@ -28,4 +33,27 @@ func findMatchingParenthesis(s string, openParPos int) int {
 
 func findMatchingBrace(s string, openParPos int) int {
     return findMatchingClosing(s, openParPos, '{', '}')
+}
+
+func parseBraceContent(content string) (int, int) {
+    splitted := strings.Split(content, ",")
+    var numbers []int
+
+    for _, value := range splitted {
+        intValue, err := strconv.Atoi(value)
+        if err != nil {
+            // Todo: handle errors properly
+            return -1, -1
+        }
+        numbers = append(numbers, intValue)
+    }
+
+    if len(numbers) == 1 {
+        return numbers[0], numbers[0]
+    } else if len(numbers) == 2 {
+        return numbers[0], numbers[1]
+    } else {
+        // Todo: handle errors properly
+        return -1, -1
+    }
 }

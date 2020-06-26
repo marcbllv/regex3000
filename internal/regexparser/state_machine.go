@@ -1,6 +1,8 @@
 package regexparser
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func BuildStateMachine(regex string) *State {
 	startingState := NewStartingState()
@@ -49,6 +51,28 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			currentState.AppendNextState(openParState)
 			currentState = closingParState
 			pos = rightParenthesis
+		} else if char == '{' {
+			rightBrace := findMatchingBrace(regex, pos)
+			innerContent := regex[pos + 1:rightBrace]
+			min, max := parseBraceContent(innerContent)
+
+			var copiedStarting *State
+			var copiedFinal *State
+			var previousCurrentState *State
+			for i := 0; i < min - 1; i++ {
+				copiedStarting, copiedFinal = duplicateLastState(currentState)
+				currentState.AppendNextState(copiedStarting)
+				previousCurrentState = currentState
+				currentState = copiedFinal
+			}
+			for i := min; i < max; i++ {
+				copiedStarting, copiedFinal = duplicateLastState(currentState)
+				previousCurrentState.AppendNextState(copiedStarting)
+				for _, prevState := range copiedFinal.PreviousStates {
+					prevState.AppendNextState(currentState)
+				}
+			}
+			pos = rightBrace
 		} else {
 			charState := NewState(char)
 			newState = &charState
@@ -96,6 +120,35 @@ func applyStarOperator(currentState *State) *State {
 	return epsilonState
 }
 
+
+func duplicateLastState(currentState *State) (*State, *State){
+	// If currentState is ')', it duplicates the whole parentheses block
+	// Returns the duplicated starting state & closing state of the block
+	if currentState.matchingState == nil {
+		copied := CopyState(currentState)
+		return copied, copied
+	} else {
+		copiedClosingPar := CopyState(currentState.matchingState)
+		return duplicateParenthesesBlock(currentState, copiedClosingPar)
+	}
+}
+
+
+func duplicateParenthesesBlock(currentState *State, copiedClosingPar *State) (*State, *State){
+	if currentState == copiedClosingPar {
+		return copiedClosingPar, copiedClosingPar
+	}
+
+	char := currentState.Char
+	stateType := currentState.StateType
+	newState := NewStateCustomType(char, stateType)
+
+	for _, nextState := range currentState.NextStates {
+		duplicatedNextState, _ := duplicateParenthesesBlock(nextState, copiedClosingPar)
+		newState.AppendNextState(duplicatedNextState)
+	}
+	return &newState, copiedClosingPar
+}
 
 
 func DisplayStateMachine(stateMachine *State, i int) {

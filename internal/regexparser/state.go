@@ -57,6 +57,17 @@ func NewEpsilonState() State {
 }
 
 
+func NewStateCustomType(char rune, stateType int) State {
+	return State{char, stateType, nil, nil, nil}
+}
+
+
+func CopyState(state *State) *State {
+	newState := State{state.Char, state.StateType, nil, nil, nil}
+	return &newState
+}
+
+
 func NewParenthesesStates() (*State, *State) {
 	openParState := State{'(', EpsilonState, nil, nil, nil}
 	closingParState := State{')', EpsilonState, nil, nil, nil}
