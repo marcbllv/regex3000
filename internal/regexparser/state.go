@@ -22,6 +22,13 @@ func (state *State) AppendNextState(nextState *State) {
 }
 
 
+func (state *State) AppendNextStateToItself() {
+	state.NextStates = append(state.NextStates, state)
+	state.PreviousStates = append(state.PreviousStates, state)
+}
+
+
+
 func (state *State) AppendNextStates(nextStates []*State) {
 	for _, s := range nextStates {
 		state.AppendNextState(s)

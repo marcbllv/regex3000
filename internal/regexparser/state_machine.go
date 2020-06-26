@@ -12,7 +12,9 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 	// TODO:
 	//  - -- OK simple concatenation
 	//  - -- OK pipe operator
-	//  - ? * + operators
+	//  - -- OK ?
+	//  - *
+	//  - +
 	//  - braces
 	//  - parentheses
 	var currentState *State
@@ -25,12 +27,32 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			buildStateMachineFromStartAndFinalStates(rightSideRegex, startingState, finalState)
 			break
 		} else if char == '?' {
+			if currentState == nil || currentState.StateType == EpsilonState {
+				return nil  // TODO: handle error properly
+			}
 			epsilonState := NewEpsilonState()
 			newState = &epsilonState
 			currentState.AppendNextState(newState)
 			for _, previousState := range currentState.PreviousStates {
 				previousState.AppendNextState(newState)
 			}
+			currentState = newState
+		} else if char == '+' {
+			if currentState == nil || currentState.StateType == EpsilonState {
+				return nil  // TODO: handle error properly
+			}
+			currentState.AppendNextStateToItself()
+		} else if char == '*' {
+			if currentState == nil || currentState.StateType == EpsilonState {
+				return nil  // TODO: handle error properly
+			}
+			epsilonState := NewEpsilonState()
+			newState = &epsilonState
+			currentState.AppendNextState(newState)
+			for _, previousState := range currentState.PreviousStates {
+				previousState.AppendNextState(newState)
+			}
+			currentState.AppendNextStateToItself()
 			currentState = newState
 		} else {
 			charState := NewState(char)
@@ -53,6 +75,8 @@ func DisplayStateMachine(stateMachine *State, i int) {
 	}
 
 	for _, nextState := range stateMachine.NextStates {
-		DisplayStateMachine(nextState, i + 1)
+		if nextState != stateMachine {
+			DisplayStateMachine(nextState, i+1)
+		}
 	}
 }
