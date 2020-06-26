@@ -1,5 +1,13 @@
 abc abc true
 abc def false
+ab?c abc true
+ab?c ac true
+ab?c ab?c false
+ab?c abbc false
+ab?c? a true
+ab?c? ab true
+ab?c? ac true
+ab?c? abc true
 (abc(def)) abcdef true
 (abc()()) abc true
 ()a(()(())()) a true
