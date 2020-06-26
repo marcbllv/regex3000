@@ -20,9 +20,6 @@ func main() {
     args := os.Args[1:]
     regex, stringToMatch := get_args_value(args)
 
-    tree := regexparser.BuildRegexTree(regex)
-    regexparser.DisplayRegexTree(tree)
-
     if regexparser.CheckRegexMatch(regex, stringToMatch) {
         fmt.Println("true")
     } else {
