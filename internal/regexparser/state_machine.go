@@ -11,7 +11,7 @@ func BuildStateMachine(regex string) *State {
 func buildStateMachineFromStartAndFinalStates(regex string, startingState *State, finalState *State) *State {
 	// TODO:
 	//  - -- OK simple concatenation
-	//  - pipe operator
+	//  - -- OK pipe operator
 	//  - ? * + operators
 	//  - braces
 	//  - parentheses
@@ -24,6 +24,14 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			rightSideRegex := regex[pos + 1:]
 			buildStateMachineFromStartAndFinalStates(rightSideRegex, startingState, finalState)
 			break
+		} else if char == '?' {
+			epsilonState := NewEpsilonState()
+			newState = &epsilonState
+			currentState.AppendNextState(newState)
+			for _, previousState := range currentState.PreviousStates {
+				previousState.AppendNextState(newState)
+			}
+			currentState = newState
 		} else {
 			charState := NewState(char)
 			newState = &charState
@@ -34,6 +42,7 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 	currentState.AppendNextState(finalState)
 	return startingState
 }
+
 
 func DisplayStateMachine(stateMachine *State, i int) {
 	fmt.Println(i)

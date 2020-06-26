@@ -12,8 +12,7 @@ const (
 	StartingState = iota
 	FinalState = iota
 	ConcatState = iota
-	DisjunctionState = iota
-	EndDisjunctionState = iota
+	EpsilonState = iota
 )
 
 
@@ -45,6 +44,6 @@ func NewFinalState() State {
 }
 
 
-func NewDisjunctionState() State {
-	return State{'|', DisjunctionState, nil, nil}
+func NewEpsilonState() State {
+	return State{0, EpsilonState, nil, nil}
 }
