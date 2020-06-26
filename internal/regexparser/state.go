@@ -5,6 +5,7 @@ type State struct {
 	StateType int
 	NextStates []*State
 	PreviousStates []*State
+	matchingState *State
 }
 
 
@@ -37,20 +38,29 @@ func (state *State) AppendNextStates(nextStates []*State) {
 
 
 func NewState(char rune) State {
-	return State{char, ConcatState, nil, nil}
+	return State{char, ConcatState, nil, nil, nil}
 }
 
 
 func NewStartingState() State {
-	return State{'!', StartingState, nil, nil}
+	return State{'!', StartingState, nil, nil, nil}
 }
 
 
 func NewFinalState() State {
-	return State{'_', FinalState, nil, nil}
+	return State{'_', FinalState, nil, nil, nil}
 }
 
 
 func NewEpsilonState() State {
-	return State{0, EpsilonState, nil, nil}
+	return State{0, EpsilonState, nil, nil, nil}
+}
+
+
+func NewParenthesesStates() (*State, *State) {
+	openParState := State{'(', EpsilonState, nil, nil, nil}
+	closingParState := State{')', EpsilonState, nil, nil, nil}
+	openParState.matchingState = &closingParState
+	closingParState.matchingState = &openParState
+	return &openParState, &closingParState
 }
