@@ -8,6 +8,14 @@ ab?c? a true
 ab?c? ab true
 ab?c? ac true
 ab?c? abc true
+ab*c ac true
+ab*c abc true
+ab*c abbbbc true
+abc* ab true
+ab+c ac false
+ab+c abc true
+ab+c abbbbc true
+ab+ abbbb true
 (abc(def)) abcdef true
 (abc()()) abc true
 ()a(()(())()) a true
