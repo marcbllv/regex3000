@@ -1,6 +1,7 @@
 package regexparser
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -27,22 +28,40 @@ func checkRegexTreeMatch(regexTree Node, str string) []string {
 	} else if len(regexTree.Children) > 0 {
 		// Concatenation of all children
 		substrs := []string{str}
-		for _, child := range regexTree.Children {
-			var newRemainingStrings []string
-			for _, substr := range substrs {
-				remainingStrings := checkRegexTreeMatch(*child, substr)
-				newRemainingStrings = append(newRemainingStrings, remainingStrings...)
+		for i := regexTree.RepeatMin; i <= regexTree.RepeatMax; i++ {
+			for _, child := range regexTree.Children {
+				var newRemainingStrings []string
+				for _, substr := range substrs {
+					remainingStrings := checkRegexTreeMatch(*child, substr)
+					newRemainingStrings = append(newRemainingStrings, remainingStrings...)
+				}
+				substrs = newRemainingStrings
 			}
-			substrs = newRemainingStrings
 		}
 		return substrs
 	} else {
 		// Simple string equality, no special chars
-		var remainingStrings []string
-		if strings.HasPrefix(str, regexTree.Value) {
-			remainingStr := strings.TrimPrefix(str, regexTree.Value)
-			remainingStrings = append(remainingStrings, remainingStr)
+		remainingString := str
+		fmt.Println("Handling:", str, regexTree.Value)
+		for i := 0; i < regexTree.RepeatMin; i++ {
+			if !strings.HasPrefix(remainingString, regexTree.Value) {
+				fmt.Println("No solution:", i, remainingString, regexTree.Value)
+				return []string{} // No solution with this repeat count
+			}
+			remainingString = strings.TrimPrefix(remainingString, regexTree.Value)
 		}
+
+		fmt.Println("Remains:", remainingString)
+		remainingStrings := []string{remainingString}
+		for i := regexTree.RepeatMin; i < regexTree.RepeatMax; i++ {
+			fmt.Println("Remaining strings", remainingStrings)
+			if strings.HasPrefix(remainingString, regexTree.Value) {
+				remainingStrings = append(remainingStrings, remainingString)
+			}
+			remainingString = strings.TrimPrefix(remainingString, regexTree.Value)
+		}
+		fmt.Println("Returning", remainingStrings)
+		fmt.Println("----")
 		return remainingStrings
 	}
 }

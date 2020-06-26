@@ -13,3 +13,5 @@ abc|def abcdef false
 (abc)|(def) abc true
 (abc)|(def) def true
 (abc)|(def) abcdef false
+abc{2} abcc true
+abc{2} abc false
