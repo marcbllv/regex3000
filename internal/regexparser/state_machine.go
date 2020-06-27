@@ -53,24 +53,20 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			currentState = closingParState
 			pos = rightParenthesis
 		} else if char == '{' {
+			var copiedStarting *State
+			var copiedFinal *State
+			var initialState *State
+
 			rightBrace := findMatchingBrace(regex, pos)
 			innerContent := regex[pos + 1:rightBrace]
 			min, max := parseBraceContent(innerContent)
-
-			var copiedStarting *State
-			var copiedFinal *State
-			var previousCurrentState *State
-			for i := 0; i < min - 1; i++ {
+			initialState = currentState
+			for i := 0; i < max - 1; i++ {
 				copiedStarting, copiedFinal = duplicateLastState(currentState)
 				currentState.AppendNextState(copiedStarting)
-				previousCurrentState = currentState
 				currentState = copiedFinal
-			}
-			for i := min; i < max; i++ {
-				copiedStarting, copiedFinal = duplicateLastState(currentState)
-				previousCurrentState.AppendNextState(copiedStarting)
-				for _, prevState := range copiedFinal.PreviousStates {
-					prevState.AppendNextState(currentState)
+				if i < max - min {
+					initialState.AppendNextState(currentState)
 				}
 			}
 			pos = rightBrace
@@ -129,26 +125,35 @@ func duplicateLastState(currentState *State) (*State, *State){
 		copied := CopyState(currentState)
 		return copied, copied
 	} else {
-		copiedClosingPar := CopyState(currentState.matchingState)
-		return duplicateParenthesesBlock(currentState, copiedClosingPar)
+		copiedOpeningPar := CopyState(currentState.matchingState)
+		duplicateParenthesesBlock(
+			currentState.matchingState,
+			copiedOpeningPar,
+			currentState,
+			copiedOpeningPar)
+		return copiedOpeningPar, copiedOpeningPar.matchingState
 	}
 }
 
 
-func duplicateParenthesesBlock(currentState *State, copiedClosingPar *State) (*State, *State){
-	if currentState == copiedClosingPar {
-		return copiedClosingPar, copiedClosingPar
+func duplicateParenthesesBlock(
+	currentState *State,
+	copiedCurrState *State,
+	closingParState *State,
+	copiedOpeningPar *State) {
+	if currentState == closingParState {
+		// Plug closing par with opening par
+		copiedOpeningPar.matchingState = copiedCurrState
+		copiedCurrState.matchingState = copiedOpeningPar
 	}
-
-	char := currentState.Char
-	stateType := currentState.StateType
-	newState := NewStateCustomType(char, stateType)
 
 	for _, nextState := range currentState.NextStates {
-		duplicatedNextState, _ := duplicateParenthesesBlock(nextState, copiedClosingPar)
-		newState.AppendNextState(duplicatedNextState)
+		char := nextState.Char
+		stateType := nextState.StateType
+		copiedNextState := NewStateCustomType(char, stateType)
+		copiedCurrState.AppendNextState(&copiedNextState)
+		duplicateParenthesesBlock(nextState, &copiedNextState, closingParState, copiedOpeningPar)
 	}
-	return &newState, copiedClosingPar
 }
 
 
