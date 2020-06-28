@@ -31,3 +31,10 @@ abc|def abcdef false
 (abc)|(def) abcdef false
 abc{2} abcc true
 abc{2} abc false
+(ab){2}c ababc true
+(ab){2}c abc false
+a(ab){2,4}c aabc false
+a(ab){2,4}c aababc true
+a(ab){2,4}c aabababc true
+a(ab){2,4}c aababababc true
+a(ab){2,4}c aabababababc false
