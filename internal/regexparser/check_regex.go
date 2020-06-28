@@ -31,15 +31,30 @@ func forwardFullStringNextStates(state *State, str string) bool {
 
 
 func matchFirstCharForwardRest(state *State, str string) bool {
-	if len(str) == 0 || state.Char != rune(str[0]) {
+	if len(str) == 0 {
 		return false
 	}
+	if !matchChar(state, rune(str[0])) {
+		return false
+	}
+
 	for _, nextState := range state.NextStates {
 		if checkStateMachine(nextState, str[1:]) {
 			return true
 		}
 	}
 	return false
+}
+
+func matchChar(state *State, char rune) bool {
+	if state.StateType != ConcatState {
+		return false
+	}
+	if char == state.Char {
+		return true
+	}
+	exists := state.CharSet[char]
+	return exists
 }
 
 

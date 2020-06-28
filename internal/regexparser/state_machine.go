@@ -70,6 +70,16 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 				}
 			}
 			pos = rightBrace
+		} else if char == '['{
+			rightBracket := findMatchingBracket(regex, pos)
+			innerContent := regex[pos + 1:rightBracket]
+			charSet := parseBracket(innerContent)
+			pos = rightBracket
+
+			state := NewSetState(charSet)
+			newState = &state
+			currentState.AppendNextState(newState)
+			currentState = newState
 		} else {
 			charState := NewState(char)
 			newState = &charState
@@ -149,8 +159,9 @@ func duplicateParenthesesBlock(
 
 	for _, nextState := range currentState.NextStates {
 		char := nextState.Char
+		charSet := nextState.CharSet
 		stateType := nextState.StateType
-		copiedNextState := NewStateCustomType(char, stateType)
+		copiedNextState := NewStateCustomType(char, charSet, stateType)
 		copiedCurrState.AppendNextState(&copiedNextState)
 		duplicateParenthesesBlock(nextState, &copiedNextState, closingParState, copiedOpeningPar)
 	}

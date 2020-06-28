@@ -5,6 +5,13 @@ import (
     "strings"
 )
 
+
+const(
+    alphaChars="abcdefghijklmnopqrstuvwxyz"
+    numberChars="0123456789"
+)
+
+
 func findMatchingClosing(s string, openParPos int, open rune, closing rune) int {
     count := 0
     substr := s[openParPos+ 1:]
@@ -35,6 +42,12 @@ func findMatchingBrace(s string, openParPos int) int {
     return findMatchingClosing(s, openParPos, '{', '}')
 }
 
+
+func findMatchingBracket(s string, openParPos int) int {
+    return findMatchingClosing(s, openParPos, '[', ']')
+}
+
+
 func parseBraceContent(content string) (int, int) {
     splitted := strings.Split(content, ",")
     var numbers []int
@@ -57,3 +70,21 @@ func parseBraceContent(content string) (int, int) {
         return -1, -1
     }
 }
+
+
+func parseBracket(bracketContent string) []rune {
+    var charSet []rune
+    var lastChar rune
+    pos := 0
+    for pos < len(bracketContent) {
+        char := rune(bracketContent[pos])
+        if strings.ContainsRune(alphaChars, char) {
+            
+        }
+
+        pos++
+    }
+    return charSet
+}
+
+
