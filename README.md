@@ -1,9 +1,24 @@
 # Regex3000
 
-Quoting Larry Page: "*Simply the most awesome regex parser in the world!!*"
+Quoting Larry Page: "*Simply the most awesome regex parser in
+the world!!*"
 
-Just kidding, this is just a project I did by myself to know more about
-how regex parsing works, and to learn Go.
+Just kidding, this is just a project I did by myself to know
+more about how regex parsing works, and to learn Go.
+
+## The parser
+
+This is a bash executable that answers `true` or `false` if a
+string matches a regex.
+
+Examples:
+
+```
+$ regex3000 "[abc]+" "abc"
+true
+$ regex3000 "[abc]+" "def"
+false
+```
 
 ### Compile
 
