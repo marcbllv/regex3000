@@ -7,8 +7,9 @@ import (
 
 
 const(
-    alphaChars="abcdefghijklmnopqrstuvwxyz"
-    digitsChars="0123456789"
+    lettersChars = "abcdefghijklmnopqrstuvwxyz"
+    capitalLettersChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    digitsChars = "0123456789"
 )
 
 
@@ -78,7 +79,12 @@ func isDigit(r rune) bool {
 
 
 func isLetter(r rune) bool {
-    return strings.ContainsRune(alphaChars, r)
+    return strings.ContainsRune(lettersChars, r)
+}
+
+
+func isCapitalLetter(r rune) bool {
+    return strings.ContainsRune(capitalLettersChars, r)
 }
 
 
@@ -88,6 +94,8 @@ func parseBracket(bracketContent string) []rune {
     for pos < len(bracketContent) {
         if pos < len(bracketContent) - 2 && bracketContent[pos + 1] == '-'{
             threeCharsPattern := bracketContent[pos:pos + 3]
+            pos += 3
+
             letter1 := rune(threeCharsPattern[0])
             letter2 := rune(threeCharsPattern[2])
             var baseString string
@@ -95,14 +103,17 @@ func parseBracket(bracketContent string) []rune {
             if isDigit(letter1) && isDigit(letter2) {
                 baseString = digitsChars
             } else if isLetter(letter1) && isLetter(letter2) {
-                baseString = alphaChars
+                baseString = lettersChars
+            } else if isCapitalLetter(letter1) && isCapitalLetter(letter2) {
+                baseString = capitalLettersChars
+            } else {
+                continue
             }
             letter1Idx := strings.IndexRune(baseString, letter1)
             letter2Idx := strings.IndexRune(baseString, letter2)
             for _, digit := range baseString[letter1Idx:letter2Idx + 1] {
                 charSet = append(charSet, digit)
             }
-            pos += 3
         } else {
             charSet = append(charSet, rune(bracketContent[pos]))
             pos++

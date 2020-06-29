@@ -38,3 +38,11 @@ a(ab){2,4}c aababc true
 a(ab){2,4}c aabababc true
 a(ab){2,4}c aababababc true
 a(ab){2,4}c aabababababc false
+[a-zA-Z0-9]+ abcXYZ01234567890 true
+[a-zA-Z0-9]+ abc-XYZ-0123 false
+[a-zA-Z0-9-]+ abc-XYZ-0123 true
+[a-zA-Z0-9_.]+ abc_XYZ.0123 true
+[a-zA-Z0-9]+ abc_XYZ.0123 false
+[a-c1-3]+ abc123 true
+[a-c1-3]+ abcd false
+[a-c1-3]+ 1234 false
