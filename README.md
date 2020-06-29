@@ -10,9 +10,16 @@ how regex parsing works, and to learn Go.
 Run:
 
 ```go
-go build -i -o bin/regexparser .
+go build -i -o bin/regex3000 ./cmd/regex3000
 ```
+
+This will create the `regex3000` executable in subdirectory `bin/`.
 
 ### Run tests
 
-Tests are run in Bash
+Multiple test cases are written down in file `tests/testcases.txt`.
+They can be run at once with the following command:
+
+```bash
+tests/testcli.sh bin/regex3000
+```
