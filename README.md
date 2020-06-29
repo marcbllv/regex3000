@@ -28,8 +28,8 @@ It currently supports:
 - Bracket characters sets, eg: `[a-z]`
 - Escaping special characters with `\`
 
-Everything else you might think about is not supported!
-
+The [list of integration test cases](https://github.com/marcbllv/regex3000/blob/master/tests/testcases.txt)
+sums up all the supported features.
 
 ## Build sources
 
