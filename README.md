@@ -26,6 +26,7 @@ It currently supports:
 - Curvy brackets operator, eg: `a{2,4}`
 - Parentheses
 - Bracket characters sets, eg: `[a-z]`
+- Escaping special characters with `\`
 
 Everything else you might think about is not supported!
 

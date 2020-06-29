@@ -46,3 +46,8 @@ a(ab){2,4}c aabababababc false
 [a-c1-3]+ abc123 true
 [a-c1-3]+ abcd false
 [a-c1-3]+ 1234 false
+a\[0-9\]+ a[0-9] true
+a\[0-9\]+ a[0-9]]] true
+a\[0-9\]+ a123 false
+abc\\def abc\def true
+abc\\def abcdef false

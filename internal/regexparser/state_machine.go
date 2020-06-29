@@ -18,7 +18,11 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 	pos := 0
 	for pos < len(regex) {
 		char := rune(regex[pos])
-		if char == '|' {
+		if char == '\\' && pos < len(regex) - 1{
+			escapedChar := rune(regex[pos + 1])
+			currentState = createAncConcatNewCharState(currentState, escapedChar)
+			pos++
+		} else if char == '|' {
 			rightSideRegex := regex[pos + 1:]
 			buildStateMachineFromStartAndFinalStates(rightSideRegex, startingState, finalState)
 			break
@@ -74,15 +78,20 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			currentState.AppendNextState(newState)
 			currentState = newState
 		} else {
-			charState := NewState(char)
-			newState = &charState
-			currentState.AppendNextState(newState)
-			currentState = newState
+			currentState = createAncConcatNewCharState(currentState, char)
 		}
 		pos++
 	}
 	currentState.AppendNextState(finalState)
 	return startingState
+}
+
+
+func createAncConcatNewCharState(currentState *State, char rune) *State {
+	charState := NewState(char)
+	newState := &charState
+	currentState.AppendNextState(newState)
+	return newState
 }
 
 

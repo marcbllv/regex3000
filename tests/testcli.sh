@@ -16,7 +16,7 @@ i=1
 echo "Running $n_tests tests..."
 echo
 
-while read line; do
+while read -r line; do
   regex="$(echo "$line" | cut -d " " -f1)"
   str="$(echo "$line" | cut -d " " -f2)"
   expected_outcome="$(echo "$line" | cut -d " " -f3)"
