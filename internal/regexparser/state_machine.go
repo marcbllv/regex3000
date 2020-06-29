@@ -11,13 +11,6 @@ func BuildStateMachine(regex string) *State {
 }
 
 func buildStateMachineFromStartAndFinalStates(regex string, startingState *State, finalState *State) *State {
-	// TODO:
-	//  - -- OK simple concatenation
-	//  - -- OK pipe operator
-	//  - -- OK ? * + operators
-	//  - -- OK parentheses
-	//  - WIP braces
-	//  - brackets
 	var currentState *State
 	var newState *State
 
