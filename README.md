@@ -1,6 +1,6 @@
 # Regex3000
 
-Simply the most awesome regex parser in the world!
+Quoting Larry Page: "*Simply the most awesome regex parser in the world!!*"
 
 Just kidding, this is just a project I did by myself to know more about
 how regex parsing works, and to learn Go.
