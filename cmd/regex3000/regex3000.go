@@ -2,7 +2,7 @@ package main
 
 import (
     "fmt"
-    "github.com/marcbllv/regexparser/internal/regexparser"
+    "github.com/marcbllv/regex3000/internal/regexparser"
     "os"
 )
 
