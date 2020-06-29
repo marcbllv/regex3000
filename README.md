@@ -20,6 +20,18 @@ $ regex3000 "[abc]+" "def"
 false
 ```
 
+It currently supports:
+
+- `+` `*` `?` `|` operators
+- Curvy brackets operator, eg: `a{2,4}`
+- Parentheses
+- Bracket characters sets, eg: `[a-z]`
+
+Everything else you might think about is not supported!
+
+
+## Build sources
+
 ### Compile
 
 Run:
