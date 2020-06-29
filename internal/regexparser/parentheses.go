@@ -8,7 +8,7 @@ import (
 
 const(
     alphaChars="abcdefghijklmnopqrstuvwxyz"
-    numberChars="0123456789"
+    digitsChars="0123456789"
 )
 
 
@@ -72,17 +72,41 @@ func parseBraceContent(content string) (int, int) {
 }
 
 
+func isDigit(r rune) bool {
+    return strings.ContainsRune(digitsChars, r)
+}
+
+
+func isLetter(r rune) bool {
+    return strings.ContainsRune(alphaChars, r)
+}
+
+
 func parseBracket(bracketContent string) []rune {
     var charSet []rune
-    var lastChar rune
     pos := 0
     for pos < len(bracketContent) {
-        char := rune(bracketContent[pos])
-        if strings.ContainsRune(alphaChars, char) {
-            
-        }
+        if pos < len(bracketContent) - 2 && bracketContent[pos + 1] == '-'{
+            threeCharsPattern := bracketContent[pos:pos + 3]
+            letter1 := rune(threeCharsPattern[0])
+            letter2 := rune(threeCharsPattern[2])
+            var baseString string
 
-        pos++
+            if isDigit(letter1) && isDigit(letter2) {
+                baseString = digitsChars
+            } else if isLetter(letter1) && isLetter(letter2) {
+                baseString = alphaChars
+            }
+            letter1Idx := strings.IndexRune(baseString, letter1)
+            letter2Idx := strings.IndexRune(baseString, letter2)
+            for _, digit := range baseString[letter1Idx:letter2Idx + 1] {
+                charSet = append(charSet, digit)
+            }
+            pos += 3
+        } else {
+            charSet = append(charSet, rune(bracketContent[pos]))
+            pos++
+        }
     }
     return charSet
 }
