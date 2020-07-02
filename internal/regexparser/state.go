@@ -12,9 +12,10 @@ type State struct {
 
 const (
 	StartingState = iota
-	FinalState = iota
-	ConcatState = iota
-	EpsilonState = iota
+	FinalState    = iota
+	CharState     = iota
+	MatchAnyState = iota
+	EpsilonState  = iota
 )
 
 
@@ -41,7 +42,7 @@ func (state *State) AppendNextStates(nextStates []*State) {
 func NewState(char rune) State {
 	charSet := make(map[rune]bool)
 	charSet[char] = true
-	return State{char, charSet, ConcatState, nil, nil, nil}
+	return State{char, charSet, CharState, nil, nil, nil}
 }
 
 
@@ -55,6 +56,11 @@ func NewFinalState() State {
 }
 
 
+func NewStateMatchAny() State {
+	return State{'.', nil, MatchAnyState, nil, nil, nil}
+}
+
+
 func NewEpsilonState() State {
 	return State{0, nil, EpsilonState, nil, nil, nil}
 }
@@ -65,7 +71,7 @@ func NewSetState(charSet []rune) State {
 	for _, r := range charSet {
 		charSetMap[r] = true
 	}
-	return State{0, charSetMap, ConcatState, nil, nil, nil}
+	return State{0, charSetMap, CharState, nil, nil, nil}
 }
 
 

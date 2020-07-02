@@ -27,20 +27,16 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			buildStateMachineFromStartAndFinalStates(rightSideRegex, startingState, finalState)
 			break
 		} else if char == '?' {
-			if currentState == nil || currentState.StateType == EpsilonState {
-				return nil  // TODO: handle error properly
-			}
 			currentState = applyQuestionMarkOperator(currentState)
 		} else if char == '+' {
-			if currentState == nil || currentState.StateType == EpsilonState {
-				return nil  // TODO: handle error properly
-			}
 			currentState = applyPlusOperator(currentState)
 		} else if char == '*' {
 			if currentState == nil || currentState.StateType == EpsilonState {
 				return nil  // TODO: handle error properly
 			}
 			currentState = applyStarOperator(currentState)
+		} else if char == '.' {
+			currentState = applyMatchAny(currentState)
 		} else if char == '(' {
 			openParState, closingParState := NewParenthesesStates()
 			rightParenthesis := findMatchingParenthesis(regex, pos)
@@ -100,6 +96,11 @@ func applyQuestionMarkOperator(currentState *State) *State {
 	newState := &epsilonState
 	currentState.AppendNextState(newState)
 
+	if currentState.PreviousStates == nil && currentState.matchingState == nil {
+		// TODO handle errors properly
+		return nil
+	}
+
 	var previousStates []*State
 	if currentState.matchingState == nil {
 		previousStates = currentState.PreviousStates
@@ -114,6 +115,10 @@ func applyQuestionMarkOperator(currentState *State) *State {
 
 
 func applyPlusOperator(currentState *State) *State {
+	if currentState == nil {
+		return nil  // TODO: handle error properly
+	}
+
 	if currentState.matchingState == nil {
 		currentState.AppendNextStateToItself()
 	} else {
@@ -127,6 +132,13 @@ func applyStarOperator(currentState *State) *State {
 	applyPlusOperator(currentState)
 	epsilonState := applyQuestionMarkOperator(currentState)
 	return epsilonState
+}
+
+
+func applyMatchAny(currentState *State) *State {
+	newState := NewStateMatchAny()
+	currentState.AppendNextState(&newState)
+	return &newState
 }
 
 

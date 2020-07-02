@@ -9,8 +9,11 @@ func CheckRegexMatch(regex string, str string) bool {
 func checkStateMachine(stateMachine *State, str string) bool {
 	if stateMachine.StateType == FinalState {
 		return matchEmptyString(str)
-	} else if stateMachine.StateType == StartingState{
+	} else if stateMachine.StateType == StartingState {
 		return forwardFullStringNextStates(stateMachine, str)
+	} else if stateMachine.StateType == MatchAnyState {
+		if len(str) == 0 {return false}
+		return forwardFullStringNextStates(stateMachine, str[1:])
 	} else if stateMachine.StateType == EpsilonState {
 		return forwardFullStringNextStates(stateMachine, str)
 	} else {
@@ -47,7 +50,7 @@ func matchFirstCharForwardRest(state *State, str string) bool {
 }
 
 func matchChar(state *State, char rune) bool {
-	if state.StateType != ConcatState {
+	if state.StateType != CharState {
 		return false
 	}
 	if char == state.Char {
