@@ -18,12 +18,12 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 	pos := 0
 	for pos < len(regex) {
 		char := rune(regex[pos])
-		if char == '\\' && pos < len(regex) - 1{
-			escapedChar := rune(regex[pos + 1])
+		if char == '\\' && pos < len(regex)-1 {
+			escapedChar := rune(regex[pos+1])
 			currentState = createAncConcatNewCharState(currentState, escapedChar)
 			pos++
 		} else if char == '|' {
-			rightSideRegex := regex[pos + 1:]
+			rightSideRegex := regex[pos+1:]
 			buildStateMachineFromStartAndFinalStates(rightSideRegex, startingState, finalState)
 			break
 		} else if char == '?' {
@@ -32,7 +32,7 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			currentState = applyPlusOperator(currentState)
 		} else if char == '*' {
 			if currentState == nil || currentState.StateType == EpsilonState {
-				return nil  // TODO: handle error properly
+				return nil // TODO: handle error properly
 			}
 			currentState = applyStarOperator(currentState)
 		} else if char == '.' {
@@ -40,7 +40,7 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 		} else if char == '(' {
 			openParState, closingParState := NewParenthesesStates()
 			rightParenthesis := findMatchingParenthesis(regex, pos)
-			innerContent := regex[pos + 1:rightParenthesis]
+			innerContent := regex[pos+1 : rightParenthesis]
 			buildStateMachineFromStartAndFinalStates(innerContent, openParState, closingParState)
 			currentState.AppendNextState(openParState)
 			currentState = closingParState
@@ -51,21 +51,21 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 			var initialState *State
 
 			rightBrace := findMatchingBrace(regex, pos)
-			innerContent := regex[pos + 1:rightBrace]
+			innerContent := regex[pos+1 : rightBrace]
 			min, max := parseBraceContent(innerContent)
 			initialState = currentState
-			for i := 0; i < max - 1; i++ {
+			for i := 0; i < max-1; i++ {
 				copiedStarting, copiedFinal = duplicateLastState(currentState)
 				currentState.AppendNextState(copiedStarting)
 				currentState = copiedFinal
-				if i < max - min {
+				if i < max-min {
 					initialState.AppendNextState(currentState)
 				}
 			}
 			pos = rightBrace
-		} else if char == '['{
+		} else if char == '[' {
 			rightBracket := findMatchingBracket(regex, pos)
-			innerContent := regex[pos + 1:rightBracket]
+			innerContent := regex[pos+1 : rightBracket]
 			charSet := parseBracket(innerContent)
 			pos = rightBracket
 
@@ -82,14 +82,12 @@ func buildStateMachineFromStartAndFinalStates(regex string, startingState *State
 	return startingState
 }
 
-
 func createAncConcatNewCharState(currentState *State, char rune) *State {
 	charState := NewState(char)
 	newState := &charState
 	currentState.AppendNextState(newState)
 	return newState
 }
-
 
 func applyQuestionMarkOperator(currentState *State) *State {
 	epsilonState := NewEpsilonState()
@@ -113,10 +111,9 @@ func applyQuestionMarkOperator(currentState *State) *State {
 	return &epsilonState
 }
 
-
 func applyPlusOperator(currentState *State) *State {
 	if currentState == nil {
-		return nil  // TODO: handle error properly
+		return nil // TODO: handle error properly
 	}
 
 	if currentState.matchingState == nil {
@@ -127,13 +124,11 @@ func applyPlusOperator(currentState *State) *State {
 	return currentState
 }
 
-
 func applyStarOperator(currentState *State) *State {
 	applyPlusOperator(currentState)
 	epsilonState := applyQuestionMarkOperator(currentState)
 	return epsilonState
 }
-
 
 func applyMatchAny(currentState *State) *State {
 	newState := NewStateMatchAny()
@@ -141,8 +136,7 @@ func applyMatchAny(currentState *State) *State {
 	return &newState
 }
 
-
-func duplicateLastState(currentState *State) (*State, *State){
+func duplicateLastState(currentState *State) (*State, *State) {
 	// If currentState is ')', it duplicates the whole parentheses block
 	// Returns the duplicated starting state & closing state of the block
 	if currentState.matchingState == nil {
@@ -158,7 +152,6 @@ func duplicateLastState(currentState *State) (*State, *State){
 		return copiedOpeningPar, copiedOpeningPar.matchingState
 	}
 }
-
 
 func duplicateParenthesesBlock(
 	currentState *State,
@@ -180,7 +173,6 @@ func duplicateParenthesesBlock(
 		duplicateParenthesesBlock(nextState, &copiedNextState, closingParState, copiedOpeningPar)
 	}
 }
-
 
 func DisplayStateMachine(stateMachine *State, i int) {
 	fmt.Println(i)
