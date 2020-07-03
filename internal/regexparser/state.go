@@ -7,7 +7,6 @@ type State struct {
 	NextStates     []*State
 	PreviousStates []*State
 	matchingState  *State
-	aaa int
 }
 
 const (
