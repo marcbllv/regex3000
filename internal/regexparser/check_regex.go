@@ -6,18 +6,19 @@ func CheckRegexMatch(regex string, str string) bool {
 }
 
 func checkStateMachine(stateMachine *State, str string) bool {
-	if stateMachine.StateType == FinalState {
+	switch stateMachine.StateType {
+	case FinalState:
 		return matchEmptyString(str)
-	} else if stateMachine.StateType == StartingState {
+	case StartingState:
 		return forwardFullStringNextStates(stateMachine, str)
-	} else if stateMachine.StateType == MatchAnyState {
+	case MatchAnyState:
 		if len(str) == 0 {
 			return false
 		}
 		return forwardFullStringNextStates(stateMachine, str[1:])
-	} else if stateMachine.StateType == EpsilonState {
+	case EpsilonState:
 		return forwardFullStringNextStates(stateMachine, str)
-	} else {
+	default:
 		// Simple concatenation
 		return matchFirstCharForwardRest(stateMachine, str)
 	}

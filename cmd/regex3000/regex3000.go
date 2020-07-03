@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/marcbllv/regex3000/internal/regexparser"
 	"os"
+
+	"github.com/marcbllv/regex3000/internal/regexparser"
 )
 
-func get_args_value(args []string) (string, string) {
+func getArgsValue(args []string) (string, string) {
 	if len(args) != 2 {
 		fmt.Println("Exactly 2 arguments are needed: regex and string to test.")
 		fmt.Printf("Recieved %d args: ", len(args))
@@ -18,7 +19,7 @@ func get_args_value(args []string) (string, string) {
 
 func main() {
 	args := os.Args[1:]
-	regex, stringToMatch := get_args_value(args)
+	regex, stringToMatch := getArgsValue(args)
 
 	if regexparser.CheckRegexMatch(regex, stringToMatch) {
 		fmt.Println("true")

@@ -56,11 +56,12 @@ func parseBraceContent(content string) (int, int) {
 		numbers = append(numbers, intValue)
 	}
 
-	if len(numbers) == 1 {
+	switch len(numbers) {
+	case 1:
 		return numbers[0], numbers[0]
-	} else if len(numbers) == 2 {
+	case 2:
 		return numbers[0], numbers[1]
-	} else {
+	default:
 		// Todo: handle errors properly
 		return -1, -1
 	}
@@ -90,13 +91,15 @@ func parseBracket(bracketContent string) []rune {
 			letter2 := rune(threeCharsPattern[2])
 			var baseString string
 
-			if isDigit(letter1) && isDigit(letter2) {
+			switch {
+			case isDigit(letter1) && isDigit(letter2):
 				baseString = digitsChars
-			} else if isLetter(letter1) && isLetter(letter2) {
+			case isLetter(letter1) && isLetter(letter2):
 				baseString = lettersChars
-			} else if isCapitalLetter(letter1) && isCapitalLetter(letter2) {
+			case isCapitalLetter(letter1) && isCapitalLetter(letter2):
 				baseString = capitalLettersChars
-			} else {
+			default:
+				// TODO: raise error here
 				continue
 			}
 			letter1Idx := strings.IndexRune(baseString, letter1)
