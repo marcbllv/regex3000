@@ -5,18 +5,18 @@ func CheckRegexMatch(regex string, str string) bool {
 	return checkStateMachine(stateMachine, str)
 }
 
-func checkStateMachine(stateMachine *State, str string) bool {
+func checkStateMachine(stateMachine *LegacyState, str string) bool {
 	switch stateMachine.StateType {
-	case FinalState:
+	case FinalStateType:
 		return matchEmptyString(str)
-	case StartingState:
+	case StartingStateType:
 		return forwardFullStringNextStates(stateMachine, str)
-	case MatchAnyState:
+	case MatchAnyStateType:
 		if len(str) == 0 {
 			return false
 		}
 		return forwardFullStringNextStates(stateMachine, str[1:])
-	case EpsilonState:
+	case EpsilonStateType:
 		return forwardFullStringNextStates(stateMachine, str)
 	default:
 		// Simple concatenation
@@ -24,7 +24,7 @@ func checkStateMachine(stateMachine *State, str string) bool {
 	}
 }
 
-func forwardFullStringNextStates(state *State, str string) bool {
+func forwardFullStringNextStates(state *LegacyState, str string) bool {
 	for _, nextState := range state.NextStates {
 		if checkStateMachine(nextState, str) {
 			return true
@@ -33,7 +33,7 @@ func forwardFullStringNextStates(state *State, str string) bool {
 	return false
 }
 
-func matchFirstCharForwardRest(state *State, str string) bool {
+func matchFirstCharForwardRest(state *LegacyState, str string) bool {
 	if len(str) == 0 {
 		return false
 	}
@@ -49,8 +49,8 @@ func matchFirstCharForwardRest(state *State, str string) bool {
 	return false
 }
 
-func matchChar(state *State, char rune) bool {
-	if state.StateType != CharState {
+func matchChar(state *LegacyState, char rune) bool {
+	if state.StateType != CharStateType {
 		return false
 	}
 	if char == state.Char {
