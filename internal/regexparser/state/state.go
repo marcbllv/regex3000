@@ -1,45 +1,45 @@
 package state
 
-type State interface {
-	Match(str string) (bool, string)
-	GetNextStates() []*State
-	GetPreviousStates() []*State
-	AppendNextState(state *State)
-	AppendStateToItself()
-	Copy() *State
+type State struct {
+	NextStates     []*State
+	PreviousStates []*State
+	MatchingState  *State
+	StateInspector Inspector
 }
 
-// Starting state
-type StartingState struct {
-	mustMatchFirstChar bool
-	NextStates         []*State
+func NewStartingState() State {
+	newStartingInspector := StartingInspector{}
+	return State{nil, nil, nil, newStartingInspector}
 }
 
-func NewStartingState() StartingState {
-	return StartingState{nil}
+func NewFinalState() State {
+	newFinalInspector := FinalInspector{}
+	return State{nil, nil, nil, newFinalInspector}
 }
 
-func (state StartingState) GetNextStates() []*State {
+func (state State) GetNextStates() []*State {
 	return state.NextStates
 }
 
-func (state StartingState) GetPreviousStates() []*State {
-	return []*State{}
-}
-
-// Final state
-type FinalState struct {
-	PreviousStates []*State
-}
-
-func NewFinalState() FinalState {
-	return FinalState{nil}
-}
-
-func (state FinalState) GetNextStates() []*State {
-	return []*State{}
-}
-
-func (state FinalState) GetPreviousStates() []*State {
+func (state State) GetPreviousStates() []*State {
 	return state.PreviousStates
+}
+
+func (state State) AppendNextState(newState *State) {
+	state.NextStates = append(state.NextStates, newState)
+	newState.PreviousStates = append(newState.PreviousStates, &state)
+}
+
+func (state State) AppendStateToItself() {
+	state.NextStates = append(state.NextStates, &state)
+	state.PreviousStates = append(state.PreviousStates, &state)
+}
+
+func (state State) Copy() State {
+	newInspector := state.StateInspector.Copy()
+	return State{NextStates: nil, PreviousStates: nil, MatchingState: nil, StateInspector: newInspector}
+}
+
+func (state State) Match(str string) (bool, string) {
+	return state.StateInspector.Match(str)
 }
