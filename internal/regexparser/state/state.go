@@ -7,16 +7,6 @@ type State struct {
 	StateInspector Inspector
 }
 
-func NewStartingState() State {
-	newStartingInspector := StartingInspector{}
-	return State{nil, nil, nil, newStartingInspector}
-}
-
-func NewFinalState() State {
-	newFinalInspector := FinalInspector{}
-	return State{nil, nil, nil, newFinalInspector}
-}
-
 func (state State) GetNextStates() []*State {
 	return state.NextStates
 }
