@@ -59,6 +59,19 @@ func NewFinalState() State {
 	return State{StateInspector: newFinalInspector}
 }
 
+func NewEpsilonState() State {
+	inspector := EpsilonInspector{}
+	return State{StateInspector: inspector}
+}
+
+func NewParenthesesStates() (State, State) {
+	openParState := NewEpsilonState()
+	closingParState := NewEpsilonState()
+	openParState.MatchingState = &closingParState
+	closingParState.MatchingState = &openParState
+	return openParState, closingParState
+}
+
 func NewCharState(char rune) State {
 	charInspector := CharInspector{char: char}
 	return State{StateInspector: charInspector}

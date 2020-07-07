@@ -51,10 +51,6 @@ func NewStateMatchAny() LegacyState {
 	return LegacyState{'.', nil, MatchAnyStateType, nil, nil, nil}
 }
 
-func NewEpsilonState() LegacyState {
-	return LegacyState{0, nil, EpsilonStateType, nil, nil, nil}
-}
-
 func NewSetState(charSet []rune) LegacyState {
 	charSetMap := make(map[rune]bool)
 	for _, r := range charSet {
@@ -77,13 +73,4 @@ func CopyState(state *LegacyState) *LegacyState {
 	}
 	newState := LegacyState{state.Char, charSet, state.StateType, nil, nil, nil}
 	return &newState
-}
-
-func NewParenthesesStates() (*LegacyState, *LegacyState) {
-	var charSet map[rune]bool
-	openParState := LegacyState{'(', charSet, EpsilonStateType, nil, nil, nil}
-	closingParState := LegacyState{')', charSet, EpsilonStateType, nil, nil, nil}
-	openParState.matchingState = &closingParState
-	closingParState.matchingState = &openParState
-	return &openParState, &closingParState
 }

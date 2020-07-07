@@ -27,6 +27,8 @@ func buildStateMachine(regex string, startingState *state.State, finalState *sta
 				pos++
 			}
 			// todo: raise error if pos == len(regex) - 1
+		case '(':
+			currentState, pos = buildParenthesesContentStates(currentState, regex, pos)
 		case '|':
 			rightSideRegex := regex[pos+1:]
 			buildStateMachine(rightSideRegex, startingState, finalState)
@@ -44,6 +46,15 @@ func createAncConcatNewCharState(currentState *state.State, char rune) *state.St
 	charState := state.NewCharState(char)
 	currentState.AppendNextState(&charState)
 	return &charState
+}
+
+func buildParenthesesContentStates(currentState *state.State, regex string, openParPosition int) (*state.State, int) {
+	openParState, closingParState := state.NewParenthesesStates()
+	rightParenthesis := findMatchingParenthesis(regex, openParPosition)
+	innerContent := regex[openParPosition+1 : rightParenthesis]
+	buildStateMachine(innerContent, &openParState, &closingParState)
+	currentState.AppendNextState(&openParState)
+	return &closingParState, rightParenthesis
 }
 
 func DisplayStateMachine(stateMachine *state.State, i int) {
