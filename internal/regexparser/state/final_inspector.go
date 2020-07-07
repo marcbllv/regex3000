@@ -1,8 +1,13 @@
 package state
 
-type FinalInspector struct{}
+type FinalInspector struct {
+	mustMatchEndOfString bool
+}
 
 func (inspector FinalInspector) Match(str string) (bool, string) {
+	if inspector.mustMatchEndOfString && len(str) > 0 {
+		return false, ""
+	}
 	return true, str
 }
 
