@@ -30,8 +30,23 @@ func (state *State) Copy() State {
 	return State{NextStates: nil, PreviousStates: nil, MatchingState: nil, StateInspector: newInspector}
 }
 
-func (state *State) Match(str string) (bool, string) {
-	return state.StateInspector.Match(str)
+func (state *State) Match(str string) bool {
+	match, restStr := state.StateInspector.Match(str)
+	nextStates := state.GetNextStates()
+	nextStatesMatch := false
+	if len(nextStates) == 0 {
+		return match
+	}
+
+	if match {
+		for _, nextState := range nextStates {
+			if nextState.Match(restStr) {
+				nextStatesMatch = true
+				break
+			}
+		}
+	}
+	return match && nextStatesMatch
 }
 
 func NewStartingState() State {
