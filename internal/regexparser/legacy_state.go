@@ -51,14 +51,6 @@ func NewStateMatchAny() LegacyState {
 	return LegacyState{'.', nil, MatchAnyStateType, nil, nil, nil}
 }
 
-func NewSetState(charSet []rune) LegacyState {
-	charSetMap := make(map[rune]bool)
-	for _, r := range charSet {
-		charSetMap[r] = true
-	}
-	return LegacyState{0, charSetMap, CharStateType, nil, nil, nil}
-}
-
 func NewStateCustomType(char rune, charSet map[rune]bool, stateType int) LegacyState {
 	return LegacyState{char, charSet, stateType, nil, nil, nil}
 }

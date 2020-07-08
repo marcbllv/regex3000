@@ -1,9 +1,19 @@
 package state
 
-import "unicode/utf8"
+import (
+	"unicode/utf8"
+)
 
 type SetInspector struct {
 	charSet map[rune]bool
+}
+
+func NewSetInspector(chars []rune) SetInspector {
+	charsSet := make(map[rune]bool)
+	for _, char := range chars {
+		charsSet[char] = true
+	}
+	return SetInspector{charsSet}
 }
 
 func (inspector SetInspector) Match(str string) (bool, string) {

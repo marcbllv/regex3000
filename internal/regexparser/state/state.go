@@ -43,12 +43,10 @@ func (state *State) Copy() *State {
 }
 
 func recursiveStatesCopy(state *State, copiedStatesCache map[*State]*State, endState *State) *State {
-
 	if copiedStatesCache[state] == nil {
 		copiedStatesCache[state] = state.CopyState()
 	}
 	copiedState := copiedStatesCache[state]
-
 	if state == endState {
 		return copiedState
 	}
@@ -114,6 +112,11 @@ func NewParenthesesStates() (*State, *State) {
 func NewCharState(char rune) State {
 	charInspector := CharInspector{char: char}
 	return State{StateInspector: charInspector}
+}
+
+func NewSetState(charsSet []rune) State {
+	setInspector := NewSetInspector(charsSet)
+	return State{StateInspector: setInspector}
 }
 
 func NewOppositeSetState(oppositeChars []rune) State {

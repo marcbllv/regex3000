@@ -44,6 +44,8 @@ func buildStateMachine(regex string, startingState *state.State, finalState *sta
 			currentState, pos = buildParenthesesContentStates(currentState, regex, pos)
 		case '{':
 			currentState, pos = buildNewBracesStates(currentState, regex, pos)
+		case '[':
+			currentState, pos = buildNewSetState(currentState, regex, pos)
 		default:
 			currentState = createAncConcatNewCharState(currentState, char)
 		}
@@ -150,4 +152,15 @@ func applyMatchAny(currentState *state.State) *state.State {
 	newState := state.NewOppositeSetState([]rune{})
 	currentState.AppendNextState(&newState)
 	return &newState
+}
+
+func buildNewSetState(currentState *state.State, regex string, pos int) (*state.State, int) {
+	rightBracket := findMatchingBracket(regex, pos)
+	innerContent := regex[pos+1 : rightBracket]
+	charSet := parseBracket(innerContent)
+
+	newState := state.NewSetState(charSet)
+	currentState.AppendNextState(&newState)
+	currentState = &newState
+	return currentState, rightBracket
 }
