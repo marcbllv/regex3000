@@ -25,9 +25,48 @@ func (state *State) AppendStateToItself() {
 	state.PreviousStates = append(state.PreviousStates, state)
 }
 
-func (state *State) Copy() State {
+func (state *State) CopyState() *State {
 	newInspector := state.StateInspector.Copy()
-	return State{NextStates: nil, PreviousStates: nil, MatchingState: nil, StateInspector: newInspector}
+	return &State{NextStates: nil, PreviousStates: nil, MatchingState: nil, StateInspector: newInspector}
+}
+
+func (state *State) Copy() *State {
+	var copiedState *State
+	if state.MatchingState == nil {
+		copiedState = state.CopyState()
+	} else {
+		openParenthesisState := state.MatchingState
+		copiedStatesCache := make(map[*State]*State)
+		copiedState = recursiveStatesCopy(openParenthesisState, copiedStatesCache, state)
+	}
+	return copiedState
+}
+
+func recursiveStatesCopy(state *State, copiedStatesCache map[*State]*State, endState *State) *State {
+
+	if copiedStatesCache[state] == nil {
+		copiedStatesCache[state] = state.CopyState()
+	}
+	copiedState := copiedStatesCache[state]
+
+	if state == endState {
+		return copiedState
+	}
+
+	for _, nextState := range state.NextStates {
+		copiedNextState := recursiveStatesCopy(nextState, copiedStatesCache, endState)
+		copiedState.AppendNextState(copiedNextState)
+	}
+	if state.MatchingState != nil {
+		copiedMatching := copiedStatesCache[state.MatchingState]
+		if copiedMatching == nil {
+			// TODO: return error, the matching state is supposed to have been copied
+		} else {
+			copiedState.MatchingState = copiedMatching
+			copiedMatching.MatchingState = copiedState
+		}
+	}
+	return copiedState
 }
 
 func (state *State) Match(str string) bool {
@@ -64,12 +103,12 @@ func NewEpsilonState() State {
 	return State{StateInspector: inspector}
 }
 
-func NewParenthesesStates() (State, State) {
+func NewParenthesesStates() (*State, *State) {
 	openParState := NewEpsilonState()
 	closingParState := NewEpsilonState()
 	openParState.MatchingState = &closingParState
 	closingParState.MatchingState = &openParState
-	return openParState, closingParState
+	return &openParState, &closingParState
 }
 
 func NewCharState(char rune) State {

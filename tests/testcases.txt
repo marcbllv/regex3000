@@ -22,13 +22,13 @@ ab+ abbbb true
 (abc(def)) abc false
 abc|def abc true
 abc|def def true
-abc|def abcdef false
+abc|def abcdef true
 (abc|def) abc true
 (abc|def) def true
-(abc|def) abcdef false
+(abc|def) abcdef true
 (abc)|(def) abc true
 (abc)|(def) def true
-(abc)|(def) abcdef false
+(abc)|(def) abcdef true
 abc{2} abcc true
 abc{2} abc false
 (ab){2}c ababc true
