@@ -3,6 +3,7 @@ package regexparser
 import (
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 const (
@@ -13,7 +14,9 @@ const (
 
 func findMatchingClosing(s string, openParPos int, open rune, closing rune) int {
 	count := 0
-	substr := s[openParPos+1:]
+	substr := s[openParPos:]
+	_, runeSize := utf8.DecodeRuneInString(s)
+	substr = substr[runeSize:]
 
 	for pos, char := range substr {
 		if char == open {
@@ -22,7 +25,7 @@ func findMatchingClosing(s string, openParPos int, open rune, closing rune) int 
 			if count > 0 {
 				count--
 			} else {
-				return openParPos + pos + 1
+				return openParPos + runeSize + pos
 			}
 		}
 	}
@@ -82,13 +85,14 @@ func isCapitalLetter(r rune) bool {
 func parseBracket(bracketContent string) []rune {
 	var charSet []rune
 	pos := 0
-	for pos < len(bracketContent) {
-		if pos < len(bracketContent)-2 && bracketContent[pos+1] == '-' {
-			threeCharsPattern := bracketContent[pos : pos+3]
+	bracketRunes := []rune(bracketContent)
+	for pos < len(bracketRunes) {
+		if pos < len(bracketRunes)-2 && bracketRunes[pos+1] == '-' {
+			threeCharsPattern := bracketRunes[pos : pos+3]
 			pos += 3
 
-			letter1 := rune(threeCharsPattern[0])
-			letter2 := rune(threeCharsPattern[2])
+			letter1 := threeCharsPattern[0]
+			letter2 := threeCharsPattern[2]
 			var baseString string
 
 			switch {
@@ -108,7 +112,7 @@ func parseBracket(bracketContent string) []rune {
 				charSet = append(charSet, digit)
 			}
 		} else {
-			charSet = append(charSet, rune(bracketContent[pos]))
+			charSet = append(charSet, bracketRunes[pos])
 			pos++
 		}
 	}

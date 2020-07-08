@@ -6,7 +6,11 @@ if [[ -z "$1" ]]; then
 fi
 tested_exec="$(pwd)/$1"
 
-here="$(pwd)/$(dirname "$0")"
+here="$(dirname "$0")"
+if [[ "$here" != /* ]]; then
+    here="$(pwd)/$(dirname "$0")"
+fi
+
 test_cases_file="testcases.txt"
 test_cases_filepath="$here/$test_cases_file"
 nbr_failures=0
@@ -17,10 +21,10 @@ echo "Running $n_tests tests..."
 echo
 
 while read -r line; do
-  regex="$(echo "$line" | cut -d " " -f1)"
-  str="$(echo "$line" | cut -d " " -f2)"
-  expected_outcome="$(echo "$line" | cut -d " " -f3)"
-  echo "[$i/$n_tests] Matching '$str' with regex '$regex'"
+  regex="$(echo -E "$line" | cut -d " " -f1)"
+  str="$(echo -E "$line" | cut -d " " -f2)"
+  expected_outcome="$(echo -E "$line" | cut -d " " -f3)"
+  echo -E "[$i/$n_tests] Matching '$str' with regex '$regex'"
 
   outcome="$($tested_exec "$regex" "$str")"
   if [[ "$outcome" != "$expected_outcome" ]]; then

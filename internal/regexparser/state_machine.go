@@ -2,112 +2,110 @@ package regexparser
 
 import (
 	"fmt"
+	"unicode/utf8"
+
+	"github.com/marcbllv/regex3000/internal/regexparser/state"
 )
 
-func BuildStateMachine(regex string) *State {
-	startingState := NewStartingState()
-	finalState := NewFinalState()
-	return buildStateMachineFromStartAndFinalStates(regex, &startingState, &finalState)
+func BuildStateMachine(regex string) *state.State {
+	startingState := state.NewStartingState()
+	finalState := state.NewFinalState()
+	return buildStateMachine(regex, &startingState, &finalState)
 }
 
-func buildStateMachineFromStartAndFinalStates(regex string, startingState *State, finalState *State) *State {
-	var currentState *State
-	var newState *State
+func buildStateMachine(regex string, startingState *state.State, finalState *state.State) *state.State {
+	var currentState *state.State
 
 	currentState = startingState
 	pos := 0
 	for pos < len(regex) {
-		char := rune(regex[pos])
+		subRegex := regex[pos:]
+		char, runeSize := utf8.DecodeRuneInString(subRegex)
 		switch char {
 		case '\\':
 			if pos < len(regex)-1 {
-				escapedChar := rune(regex[pos+1])
+				escapedChar, escapedRuneSize := utf8.DecodeRuneInString(subRegex[runeSize:])
 				currentState = createAncConcatNewCharState(currentState, escapedChar)
-				pos++
+				pos += escapedRuneSize
 			}
 			// todo: raise error if pos == len(regex) - 1
 		case '|':
-			rightSideRegex := regex[pos+1:]
-			buildStateMachineFromStartAndFinalStates(rightSideRegex, startingState, finalState)
-			pos = len(regex) // break 'for' loop
+			buildStateMachine(regex[pos+runeSize:], startingState, finalState)
+			pos = len(regex) // to end the for loop
 		case '?':
 			currentState = applyQuestionMarkOperator(currentState)
 		case '+':
 			currentState = applyPlusOperator(currentState)
 		case '*':
-			if currentState == nil || currentState.StateType == EpsilonState {
-				return nil // TODO: handle error properly
-			}
 			currentState = applyStarOperator(currentState)
 		case '.':
 			currentState = applyMatchAny(currentState)
 		case '(':
-			openParState, closingParState := NewParenthesesStates()
-			rightParenthesis := findMatchingParenthesis(regex, pos)
-			innerContent := regex[pos+1 : rightParenthesis]
-			buildStateMachineFromStartAndFinalStates(innerContent, openParState, closingParState)
-			currentState.AppendNextState(openParState)
-			currentState = closingParState
-			pos = rightParenthesis
+			currentState, pos = buildParenthesesContentStates(currentState, regex, pos)
 		case '{':
-			var copiedStarting *State
-			var copiedFinal *State
-			var initialState *State
-
-			rightBrace := findMatchingBrace(regex, pos)
-			innerContent := regex[pos+1 : rightBrace]
-			min, max := parseBraceContent(innerContent)
-			initialState = currentState
-			for i := 0; i < max-1; i++ {
-				copiedStarting, copiedFinal = duplicateLastState(currentState)
-				currentState.AppendNextState(copiedStarting)
-				currentState = copiedFinal
-				if i < max-min {
-					initialState.AppendNextState(currentState)
-				}
-			}
-			pos = rightBrace
+			currentState, pos = buildNewBracesStates(currentState, regex, pos)
 		case '[':
-			rightBracket := findMatchingBracket(regex, pos)
-			innerContent := regex[pos+1 : rightBracket]
-			charSet := parseBracket(innerContent)
-			pos = rightBracket
-
-			state := NewSetState(charSet)
-			newState = &state
-			currentState.AppendNextState(newState)
-			currentState = newState
+			currentState, pos = buildNewSetState(currentState, regex, pos)
 		default:
 			currentState = createAncConcatNewCharState(currentState, char)
 		}
-		pos++
+		pos += runeSize
 	}
 	currentState.AppendNextState(finalState)
 	return startingState
 }
 
-func createAncConcatNewCharState(currentState *State, char rune) *State {
-	charState := NewState(char)
-	newState := &charState
-	currentState.AppendNextState(newState)
-	return newState
+func createAncConcatNewCharState(currentState *state.State, char rune) *state.State {
+	charState := state.NewCharState(char)
+	currentState.AppendNextState(&charState)
+	return &charState
 }
 
-func applyQuestionMarkOperator(currentState *State) *State {
-	epsilonState := NewEpsilonState()
+func buildParenthesesContentStates(currentState *state.State, regex string, openParPosition int) (*state.State, int) {
+	openParState, closingParState := state.NewParenthesesStates()
+	rightParenthesis := findMatchingParenthesis(regex, openParPosition)
+	innerContent := regex[openParPosition+1 : rightParenthesis]
+	buildStateMachine(innerContent, openParState, closingParState)
+	currentState.AppendNextState(openParState)
+	return closingParState, rightParenthesis
+}
+
+func buildNewBracesStates(currentState *state.State, regex string, openBracePosition int) (*state.State, int) {
+	rightBrace := findMatchingBrace(regex, openBracePosition)
+	innerContent := regex[openBracePosition+1 : rightBrace]
+	min, max := parseBraceContent(innerContent)
+	initialState := currentState
+	for i := 0; i < max-1; i++ {
+		copiedStarting := currentState.Copy()
+		currentState.AppendNextState(copiedStarting)
+		if copiedStarting.MatchingState == nil {
+			currentState = copiedStarting
+		} else {
+			currentState = copiedStarting.MatchingState
+		}
+
+		if i < max-min {
+			initialState.AppendNextState(currentState)
+		}
+	}
+	return currentState, rightBrace
+}
+
+func applyQuestionMarkOperator(currentState *state.State) *state.State {
+	epsilonState := state.NewEpsilonState()
 	newState := &epsilonState
 	currentState.AppendNextState(newState)
 
-	if currentState.PreviousStates == nil && currentState.matchingState == nil {
+	if currentState.PreviousStates == nil && currentState.MatchingState == nil {
 		// TODO handle errors properly
 		return nil
 	}
 
-	var previousStates []*State
-	if currentState.matchingState == nil {
+	var previousStates []*state.State
+	if currentState.MatchingState == nil {
 		previousStates = currentState.PreviousStates
 	} else {
-		previousStates = []*State{currentState.matchingState}
+		previousStates = []*state.State{currentState.MatchingState}
 	}
 	for _, previousState := range previousStates {
 		previousState.AppendNextState(newState)
@@ -115,80 +113,54 @@ func applyQuestionMarkOperator(currentState *State) *State {
 	return &epsilonState
 }
 
-func applyPlusOperator(currentState *State) *State {
+func applyPlusOperator(currentState *state.State) *state.State {
 	if currentState == nil {
 		return nil // TODO: handle error properly
 	}
 
-	if currentState.matchingState == nil {
-		currentState.AppendNextStateToItself()
+	if currentState.MatchingState == nil {
+		currentState.AppendStateToItself()
 	} else {
-		currentState.AppendNextState(currentState.matchingState)
+		currentState.AppendNextState(currentState.MatchingState)
 	}
 	return currentState
 }
 
-func applyStarOperator(currentState *State) *State {
+func applyStarOperator(currentState *state.State) *state.State {
 	applyPlusOperator(currentState)
 	epsilonState := applyQuestionMarkOperator(currentState)
 	return epsilonState
 }
 
-func applyMatchAny(currentState *State) *State {
-	newState := NewStateMatchAny()
-	currentState.AppendNextState(&newState)
-	return &newState
-}
-
-func duplicateLastState(currentState *State) (*State, *State) {
-	// If currentState is ')', it duplicates the whole parentheses block
-	// Returns the duplicated starting state & closing state of the block
-	if currentState.matchingState == nil {
-		copied := CopyState(currentState)
-		return copied, copied
-	}
-
-	copiedOpeningPar := CopyState(currentState.matchingState)
-	duplicateParenthesesBlock(
-		currentState.matchingState,
-		copiedOpeningPar,
-		currentState,
-		copiedOpeningPar)
-	return copiedOpeningPar, copiedOpeningPar.matchingState
-}
-
-func duplicateParenthesesBlock(
-	currentState *State,
-	copiedCurrState *State,
-	closingParState *State,
-	copiedOpeningPar *State) {
-	if currentState == closingParState {
-		// Plug closing par with opening par
-		copiedOpeningPar.matchingState = copiedCurrState
-		copiedCurrState.matchingState = copiedOpeningPar
-	}
-
-	for _, nextState := range currentState.NextStates {
-		char := nextState.Char
-		charSet := nextState.CharSet
-		stateType := nextState.StateType
-		copiedNextState := NewStateCustomType(char, charSet, stateType)
-		copiedCurrState.AppendNextState(&copiedNextState)
-		duplicateParenthesesBlock(nextState, &copiedNextState, closingParState, copiedOpeningPar)
-	}
-}
-
-func DisplayStateMachine(stateMachine *State, i int) {
+func DisplayStateMachine(stateMachine *state.State, i int) {
 	fmt.Println(i)
 	fmt.Printf("State: %p %v\n ", stateMachine, stateMachine)
-	if len(stateMachine.NextStates) == 0 {
+	nextStates := stateMachine.GetNextStates()
+	if len(nextStates) == 0 {
 		fmt.Println("No next states, ending.")
 		return
 	}
 
-	for _, nextState := range stateMachine.NextStates {
+	for _, nextState := range nextStates {
 		if nextState != stateMachine {
 			DisplayStateMachine(nextState, i+1)
 		}
 	}
+}
+
+func applyMatchAny(currentState *state.State) *state.State {
+	newState := state.NewOppositeSetState([]rune{})
+	currentState.AppendNextState(&newState)
+	return &newState
+}
+
+func buildNewSetState(currentState *state.State, regex string, pos int) (*state.State, int) {
+	rightBracket := findMatchingBracket(regex, pos)
+	innerContent := regex[pos+1 : rightBracket]
+	charSet := parseBracket(innerContent)
+
+	newState := state.NewSetState(charSet)
+	currentState.AppendNextState(&newState)
+	currentState = &newState
+	return currentState, rightBracket
 }
