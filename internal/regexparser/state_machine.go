@@ -24,7 +24,7 @@ func buildStateMachine(regex string, startingState *state.State, finalState *sta
 		switch char {
 		case '\\':
 			if pos < len(regex)-1 {
-				escapedChar, escapedRuneSize := utf8.DecodeRuneInString(subRegex[:runeSize])
+				escapedChar, escapedRuneSize := utf8.DecodeRuneInString(subRegex[runeSize:])
 				currentState = createAncConcatNewCharState(currentState, escapedChar)
 				pos += escapedRuneSize
 			}
@@ -38,6 +38,8 @@ func buildStateMachine(regex string, startingState *state.State, finalState *sta
 			currentState = applyPlusOperator(currentState)
 		case '*':
 			currentState = applyStarOperator(currentState)
+		case '.':
+			currentState = applyMatchAny(currentState)
 		case '(':
 			currentState, pos = buildParenthesesContentStates(currentState, regex, pos)
 		case '{':
@@ -142,4 +144,10 @@ func DisplayStateMachine(stateMachine *state.State, i int) {
 			DisplayStateMachine(nextState, i+1)
 		}
 	}
+}
+
+func applyMatchAny(currentState *state.State) *state.State {
+	newState := state.NewOppositeSetState([]rune{})
+	currentState.AppendNextState(&newState)
+	return &newState
 }

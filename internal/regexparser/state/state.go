@@ -115,3 +115,8 @@ func NewCharState(char rune) State {
 	charInspector := CharInspector{char: char}
 	return State{StateInspector: charInspector}
 }
+
+func NewOppositeSetState(oppositeChars []rune) State {
+	oppositeSetInspector := NewOppositeSetInspector(oppositeChars)
+	return State{StateInspector: oppositeSetInspector}
+}
