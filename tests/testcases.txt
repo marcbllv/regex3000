@@ -62,3 +62,9 @@ ab\. ab. true
 [^a-zA-Z]+ 12345 true
 [^3-5]+ 345 false
 [^3-5]+ 012 true
+def abcdefghi true
+^def$ abcdefghi false
+def$ defhgi false
+def$ abcdef true
+^def abcdef false
+^def defghi true
