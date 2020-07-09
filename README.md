@@ -27,13 +27,13 @@ It currently supports:
 - Parentheses
 - Bracket characters sets, eg: `[a-z]`
 - Escaping special characters with `\`
+- "opposite" sets with `^`, eg `[^a-z]`
+- match start & end (`^` & `$`)
 
 Still todo:
 
-- "opposite" sets with `^`, eg `[^a-z]`
-- match start & end (`^` & `$`)
 - Special sets like `\w`, `\W`, `\d`, ...
- 
+- Escaping special chars within brackets (eg: `[a-z\]]`)
 
 The [list of integration test cases](https://github.com/marcbllv/regex3000/blob/master/tests/testcases.txt)
 sums up all the supported features.
