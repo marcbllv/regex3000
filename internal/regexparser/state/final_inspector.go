@@ -4,11 +4,14 @@ type FinalInspector struct {
 	mustMatchEndOfString bool
 }
 
-func (inspector FinalInspector) Match(str string) (bool, string) {
-	if inspector.mustMatchEndOfString && len(str) > 0 {
-		return false, ""
+func (inspector FinalInspector) Match(str []rune, pos int) []int {
+	if pos > len(str) {
+		return []int{}
 	}
-	return true, str
+	if inspector.mustMatchEndOfString && pos < len(str) {
+		return []int{}
+	}
+	return []int{pos}
 }
 
 func (inspector FinalInspector) Copy() Inspector {

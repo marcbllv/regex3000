@@ -1,17 +1,17 @@
 package state
 
-import "unicode/utf8"
-
 type CharInspector struct {
 	char rune
 }
 
-func (inspector CharInspector) Match(str string) (bool, string) {
-	firstRune, runeSize := utf8.DecodeRuneInString(str)
-	if inspector.char == firstRune {
-		return true, str[runeSize:]
+func (inspector CharInspector) Match(str []rune, pos int) []int {
+	if pos >= len(str) {
+		return []int{}
 	}
-	return false, ""
+	if inspector.char == str[pos] {
+		return []int{pos + 1}
+	}
+	return []int{}
 }
 
 func (inspector CharInspector) Copy() Inspector {
