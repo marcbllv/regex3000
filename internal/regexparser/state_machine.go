@@ -7,9 +7,11 @@ import (
 )
 
 func BuildStateMachine(regex string) *state.State {
-	startingState := state.NewStartingState()
-	finalState := state.NewFinalState()
 	regexRunes := []rune(regex)
+	matchBeginning, regexRunes := getMatchBeginning(regexRunes)
+	matchEnd, regexRunes := getMatchEnd(regexRunes)
+	startingState := state.NewStartingState(matchBeginning)
+	finalState := state.NewFinalState(matchEnd)
 	return buildStateMachine(regexRunes, &startingState, &finalState)
 }
 
@@ -52,6 +54,20 @@ func buildStateMachine(regex []rune, startingState *state.State, finalState *sta
 	}
 	currentState.AppendNextState(finalState)
 	return startingState
+}
+
+func getMatchBeginning(regex []rune) (bool, []rune) {
+	if regex[0] == '^' {
+		return true, regex[1:]
+	}
+	return false, regex
+}
+
+func getMatchEnd(regex []rune) (bool, []rune) {
+	if regex[len(regex)-1] == '$' {
+		return true, regex[:len(regex)-1]
+	}
+	return false, regex
 }
 
 func createAncConcatNewCharState(currentState *state.State, char rune) *state.State {

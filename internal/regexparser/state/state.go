@@ -87,13 +87,13 @@ func (state *State) Match(str []rune, pos int) bool {
 	return false
 }
 
-func NewStartingState() State {
-	newStartingInspector := StartingInspector{}
+func NewStartingState(matchBeginning bool) State {
+	newStartingInspector := StartingInspector{matchBeginning: matchBeginning}
 	return State{StateInspector: newStartingInspector}
 }
 
-func NewFinalState() State {
-	newFinalInspector := FinalInspector{mustMatchEndOfString: false}
+func NewFinalState(matchEnd bool) State {
+	newFinalInspector := FinalInspector{matchEnd: matchEnd}
 	return State{StateInspector: newFinalInspector}
 }
 

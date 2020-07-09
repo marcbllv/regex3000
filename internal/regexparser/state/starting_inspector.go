@@ -1,7 +1,7 @@
 package state
 
 type StartingInspector struct {
-	mustMatchBeginningOfString bool
+	matchBeginning bool
 }
 
 func (inspector StartingInspector) Match(str []rune, pos int) []int {
@@ -9,7 +9,7 @@ func (inspector StartingInspector) Match(str []rune, pos int) []int {
 		return []int{}
 	}
 
-	if inspector.mustMatchBeginningOfString {
+	if inspector.matchBeginning {
 		return []int{0}
 	}
 	matchingPositions := make([]int, len(str))
