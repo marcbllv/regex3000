@@ -88,12 +88,12 @@ func (state *State) Match(str []rune, pos int) bool {
 }
 
 func NewStartingState(matchBeginning bool) State {
-	newStartingInspector := StartingInspector{matchBeginning: matchBeginning}
+	newStartingInspector := StartingInspector{mustMatchBeginningOfString: matchBeginning}
 	return State{StateInspector: newStartingInspector}
 }
 
 func NewFinalState(matchEnd bool) State {
-	newFinalInspector := FinalInspector{matchEnd: matchEnd}
+	newFinalInspector := FinalInspector{mustMatchEndOfString: matchEnd}
 	return State{StateInspector: newFinalInspector}
 }
 

@@ -1,14 +1,14 @@
 package state
 
 type FinalInspector struct {
-	matchEnd bool
+	mustMatchEndOfString bool
 }
 
 func (inspector FinalInspector) Match(str []rune, pos int) []int {
 	if pos > len(str) {
 		return []int{}
 	}
-	if inspector.matchEnd && pos < len(str) {
+	if inspector.mustMatchEndOfString && pos < len(str) {
 		return []int{}
 	}
 	return []int{pos}
