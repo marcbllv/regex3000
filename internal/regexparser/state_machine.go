@@ -2,7 +2,6 @@ package regexparser
 
 import (
 	"fmt"
-	"unicode/utf8"
 
 	"github.com/marcbllv/regex3000/internal/regexparser/state"
 )
@@ -10,27 +9,27 @@ import (
 func BuildStateMachine(regex string) *state.State {
 	startingState := state.NewStartingState()
 	finalState := state.NewFinalState()
-	return buildStateMachine(regex, &startingState, &finalState)
+	regexRunes := []rune(regex)
+	return buildStateMachine(regexRunes, &startingState, &finalState)
 }
 
-func buildStateMachine(regex string, startingState *state.State, finalState *state.State) *state.State {
+func buildStateMachine(regex []rune, startingState *state.State, finalState *state.State) *state.State {
 	var currentState *state.State
 
 	currentState = startingState
 	pos := 0
 	for pos < len(regex) {
-		subRegex := regex[pos:]
-		char, runeSize := utf8.DecodeRuneInString(subRegex)
+		char := regex[pos]
 		switch char {
 		case '\\':
 			if pos < len(regex)-1 {
-				escapedChar, escapedRuneSize := utf8.DecodeRuneInString(subRegex[runeSize:])
+				escapedChar := regex[pos+1]
 				currentState = createAncConcatNewCharState(currentState, escapedChar)
-				pos += escapedRuneSize
+				pos++
 			}
 			// todo: raise error if pos == len(regex) - 1
 		case '|':
-			buildStateMachine(regex[pos+runeSize:], startingState, finalState)
+			buildStateMachine(regex[pos+1:], startingState, finalState)
 			pos = len(regex) // to end the for loop
 		case '?':
 			currentState = applyQuestionMarkOperator(currentState)
@@ -49,7 +48,7 @@ func buildStateMachine(regex string, startingState *state.State, finalState *sta
 		default:
 			currentState = createAncConcatNewCharState(currentState, char)
 		}
-		pos += runeSize
+		pos++
 	}
 	currentState.AppendNextState(finalState)
 	return startingState
@@ -61,7 +60,7 @@ func createAncConcatNewCharState(currentState *state.State, char rune) *state.St
 	return &charState
 }
 
-func buildParenthesesContentStates(currentState *state.State, regex string, openParPosition int) (*state.State, int) {
+func buildParenthesesContentStates(currentState *state.State, regex []rune, openParPosition int) (*state.State, int) {
 	openParState, closingParState := state.NewParenthesesStates()
 	rightParenthesis := findMatchingParenthesis(regex, openParPosition)
 	innerContent := regex[openParPosition+1 : rightParenthesis]
@@ -70,7 +69,7 @@ func buildParenthesesContentStates(currentState *state.State, regex string, open
 	return closingParState, rightParenthesis
 }
 
-func buildNewBracesStates(currentState *state.State, regex string, openBracePosition int) (*state.State, int) {
+func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosition int) (*state.State, int) {
 	rightBrace := findMatchingBrace(regex, openBracePosition)
 	innerContent := regex[openBracePosition+1 : rightBrace]
 	min, max := parseBraceContent(innerContent)
@@ -154,7 +153,7 @@ func applyMatchAny(currentState *state.State) *state.State {
 	return &newState
 }
 
-func buildNewSetState(currentState *state.State, regex string, pos int) (*state.State, int) {
+func buildNewSetState(currentState *state.State, regex []rune, pos int) (*state.State, int) {
 	rightBracket := findMatchingBracket(regex, pos)
 	innerContent := regex[pos+1 : rightBracket]
 	charSet, isOppositeSet := parseBracket(innerContent)
