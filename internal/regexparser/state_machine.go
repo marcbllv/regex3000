@@ -84,7 +84,9 @@ func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosi
 		}
 
 		if i < max-min {
-			initialState.AppendNextState(currentState)
+			for _, prevInitState := range initialState.GetPreviousStates() {
+				prevInitState.AppendNextState(currentState)
+			}
 		}
 	}
 	return currentState, rightBrace
