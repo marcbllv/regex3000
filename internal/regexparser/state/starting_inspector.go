@@ -14,7 +14,7 @@ func (inspector StartingInspector) Match(str []rune, pos int) []int {
 	}
 	matchingPositions := make([]int, len(str))
 	for i := 0; i < len(str); i++ {
-		matchingPositions = append(matchingPositions, i)
+		matchingPositions[i] = i
 	}
 	return matchingPositions
 }
