@@ -1,9 +1,5 @@
 package state
 
-import (
-	"unicode/utf8"
-)
-
 type SetInspector struct {
 	charSet map[rune]bool
 }
@@ -16,12 +12,14 @@ func NewSetInspector(chars []rune) SetInspector {
 	return SetInspector{charsSet}
 }
 
-func (inspector SetInspector) Match(str string) (bool, string) {
-	firstRune, runeSize := utf8.DecodeRuneInString(str)
-	if inspector.charSet[firstRune] {
-		return true, str[runeSize:]
+func (inspector SetInspector) Match(str []rune, pos int) []int {
+	if pos >= len(str) {
+		return []int{}
 	}
-	return false, ""
+	if inspector.charSet[str[pos]] {
+		return []int{pos + 1}
+	}
+	return []int{}
 }
 
 func (inspector SetInspector) Copy() Inspector {

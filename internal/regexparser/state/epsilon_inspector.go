@@ -2,8 +2,11 @@ package state
 
 type EpsilonInspector struct{}
 
-func (inspector EpsilonInspector) Match(str string) (bool, string) {
-	return true, str
+func (inspector EpsilonInspector) Match(str []rune, pos int) []int {
+	if pos > len(str) {
+		return []int{}
+	}
+	return []int{pos}
 }
 
 func (inspector EpsilonInspector) Copy() Inspector {

@@ -67,23 +67,24 @@ func recursiveStatesCopy(state *State, copiedStatesCache map[*State]*State, endS
 	return copiedState
 }
 
-func (state *State) Match(str string) bool {
-	match, restStr := state.StateInspector.Match(str)
-	nextStates := state.GetNextStates()
-	nextStatesMatch := false
-	if len(nextStates) == 0 {
-		return match
+func (state *State) Match(str []rune, pos int) bool {
+	matchPositions := state.StateInspector.Match(str, pos)
+	if len(matchPositions) == 0 {
+		return false
 	}
 
-	if match {
+	nextStates := state.GetNextStates()
+	if len(nextStates) == 0 {
+		return true
+	}
+	for _, nextPos := range matchPositions {
 		for _, nextState := range nextStates {
-			if nextState.Match(restStr) {
-				nextStatesMatch = true
-				break
+			if nextState.Match(str, nextPos) {
+				return true
 			}
 		}
 	}
-	return match && nextStatesMatch
+	return false
 }
 
 func NewStartingState() State {

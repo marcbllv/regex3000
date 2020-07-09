@@ -1,6 +1,6 @@
 package state
 
 type Inspector interface {
-	Match(str string) (bool, string)
+	Match(str []rune, pos int) []int
 	Copy() Inspector
 }
