@@ -157,9 +157,15 @@ func applyMatchAny(currentState *state.State) *state.State {
 func buildNewSetState(currentState *state.State, regex string, pos int) (*state.State, int) {
 	rightBracket := findMatchingBracket(regex, pos)
 	innerContent := regex[pos+1 : rightBracket]
-	charSet := parseBracket(innerContent)
+	charSet, isOppositeSet := parseBracket(innerContent)
 
-	newState := state.NewSetState(charSet)
+	var newState state.State
+	if isOppositeSet {
+		newState = state.NewOppositeSetState(charSet)
+	} else {
+		newState = state.NewSetState(charSet)
+
+	}
 	currentState.AppendNextState(&newState)
 	currentState = &newState
 	return currentState, rightBracket

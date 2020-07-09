@@ -58,3 +58,7 @@ c..f cdef true
 c..f cccf true
 ab\. abc false
 ab\. ab. true
+[^a-zA-Z]+ aaaBBB false
+[^a-zA-Z]+ 12345 true
+[^3-5]+ 345 false
+[^3-5]+ 012 true
