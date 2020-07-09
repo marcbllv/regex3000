@@ -2,7 +2,6 @@ package regexparser
 
 import (
 	"strings"
-	"unicode/utf8"
 )
 
 const (
@@ -23,19 +22,17 @@ func isCapitalLetter(r rune) bool {
 	return strings.ContainsRune(capitalLettersChars, r)
 }
 
-func parseBracket(bracketContent string) ([]rune, bool) {
+func parseBracket(bracketContent []rune) ([]rune, bool) {
 	var charSet []rune
 	pos := 0
-	bracketRunes := []rune(bracketContent)
-	firstRune, _ := utf8.DecodeRuneInString(bracketContent)
-	isOppositeSet := firstRune == '^'
+	isOppositeSet := bracketContent[0] == '^'
 	if isOppositeSet {
 		pos++
 	}
 
-	for pos < len(bracketRunes) {
-		if pos < len(bracketRunes)-2 && bracketRunes[pos+1] == '-' {
-			threeCharsPattern := bracketRunes[pos : pos+3]
+	for pos < len(bracketContent) {
+		if pos < len(bracketContent)-2 && bracketContent[pos+1] == '-' {
+			threeCharsPattern := bracketContent[pos : pos+3]
 			pos += 3
 
 			letter1 := threeCharsPattern[0]
@@ -59,7 +56,7 @@ func parseBracket(bracketContent string) ([]rune, bool) {
 				charSet = append(charSet, digit)
 			}
 		} else {
-			charSet = append(charSet, bracketRunes[pos])
+			charSet = append(charSet, bracketContent[pos])
 			pos++
 		}
 	}

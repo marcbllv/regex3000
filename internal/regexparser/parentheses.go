@@ -3,14 +3,11 @@ package regexparser
 import (
 	"strconv"
 	"strings"
-	"unicode/utf8"
 )
 
-func findMatchingClosing(s string, openParPos int, open rune, closing rune) int {
+func findMatchingClosing(s []rune, openParPos int, open rune, closing rune) int {
 	count := 0
-	substr := s[openParPos:]
-	_, runeSize := utf8.DecodeRuneInString(s)
-	substr = substr[runeSize:]
+	substr := s[openParPos+1:]
 
 	for pos, char := range substr {
 		if char == open {
@@ -19,7 +16,7 @@ func findMatchingClosing(s string, openParPos int, open rune, closing rune) int 
 			if count > 0 {
 				count--
 			} else {
-				return openParPos + runeSize + pos
+				return openParPos + 1 + pos
 			}
 		}
 	}
@@ -28,20 +25,20 @@ func findMatchingClosing(s string, openParPos int, open rune, closing rune) int 
 	return -1
 }
 
-func findMatchingParenthesis(s string, openParPos int) int {
+func findMatchingParenthesis(s []rune, openParPos int) int {
 	return findMatchingClosing(s, openParPos, '(', ')')
 }
 
-func findMatchingBrace(s string, openParPos int) int {
+func findMatchingBrace(s []rune, openParPos int) int {
 	return findMatchingClosing(s, openParPos, '{', '}')
 }
 
-func findMatchingBracket(s string, openParPos int) int {
+func findMatchingBracket(s []rune, openParPos int) int {
 	return findMatchingClosing(s, openParPos, '[', ']')
 }
 
-func parseBraceContent(content string) (int, int) {
-	splitted := strings.Split(content, ",")
+func parseBraceContent(content []rune) (int, int) {
+	splitted := strings.Split(string(content), ",")
 	var numbers []int
 
 	for _, value := range splitted {
