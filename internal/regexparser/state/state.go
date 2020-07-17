@@ -5,6 +5,7 @@ type State struct {
 	PreviousStates []*State
 	MatchingState  *State
 	StateInspector Inspector
+	IsFinalState   bool
 }
 
 func (state State) GetNextStates() []*State {
@@ -75,7 +76,7 @@ func (state *State) Match(str []rune, pos int) bool {
 
 	nextStates := state.GetNextStates()
 	if len(nextStates) == 0 {
-		return true
+		return state.IsFinalState
 	}
 	for _, nextPos := range matchPositions {
 		for _, nextState := range nextStates {
@@ -94,7 +95,7 @@ func NewStartingState(matchBeginning bool) State {
 
 func NewFinalState(matchEnd bool) State {
 	newFinalInspector := FinalInspector{mustMatchEndOfString: matchEnd}
-	return State{StateInspector: newFinalInspector}
+	return State{StateInspector: newFinalInspector, IsFinalState: true}
 }
 
 func NewEpsilonState() State {
