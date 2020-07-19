@@ -3,6 +3,8 @@ package regexparser
 import (
 	"fmt"
 
+	"github.com/marcbllv/regex3000/internal/regexparser/parse"
+
 	"github.com/marcbllv/regex3000/internal/regexparser/state"
 )
 
@@ -86,11 +88,9 @@ func buildParenthesesContentStates(currentState *state.State, regex []rune, open
 }
 
 func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosition int) (*state.State, int) {
-	rightBrace := findMatchingBrace(regex, openBracePosition)
-	innerContent := regex[openBracePosition+1 : rightBrace]
-	min, max := parseBraceContent(innerContent)
+	rangeQuantifier, currentPosition := parse.ParseBraces(regex, openBracePosition)
 	initialState := currentState
-	for i := 0; i < max-1; i++ {
+	for i := 0; i < rangeQuantifier.High-1; i++ {
 		copiedStarting := currentState.Copy()
 		currentState.AppendNextState(copiedStarting)
 		if copiedStarting.MatchingState == nil {
@@ -99,13 +99,13 @@ func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosi
 			currentState = copiedStarting.MatchingState
 		}
 
-		if i < max-min {
+		if i < rangeQuantifier.High-rangeQuantifier.Low {
 			for _, prevInitState := range initialState.GetPreviousStates() {
 				prevInitState.AppendNextState(currentState)
 			}
 		}
 	}
-	return currentState, rightBrace
+	return currentState, currentPosition
 }
 
 func applyQuestionMarkOperator(currentState *state.State) *state.State {
