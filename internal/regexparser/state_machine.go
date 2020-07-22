@@ -26,23 +26,22 @@ func buildStateMachine(regex []rune, startingState *state.State, finalState *sta
 		char := regex[pos]
 		switch char {
 		case '\\':
-			if pos < len(regex)-1 {
-				escapedChar := regex[pos+1]
-				currentState = createAncConcatNewCharState(currentState, escapedChar)
-				pos++
-			}
-			// todo: raise error if pos == len(regex) - 1
+			currentState, pos = applyBackslashEscaping(regex, pos, currentState)
 		case '|':
 			buildStateMachine(regex[pos+1:], startingState, finalState)
 			pos = len(regex) // to end the for loop
 		case '?':
 			currentState = applyQuestionMarkOperator(currentState)
+			pos++
 		case '+':
 			currentState = applyPlusOperator(currentState)
+			pos++
 		case '*':
 			currentState = applyStarOperator(currentState)
+			pos++
 		case '.':
 			currentState = applyMatchAny(currentState)
+			pos++
 		case '(':
 			currentState, pos = buildParenthesesContentStates(currentState, regex, pos)
 		case '{':
@@ -51,8 +50,8 @@ func buildStateMachine(regex []rune, startingState *state.State, finalState *sta
 			currentState, pos = buildNewSetState(currentState, regex, pos)
 		default:
 			currentState = createAncConcatNewCharState(currentState, char)
+			pos++
 		}
-		pos++
 	}
 	currentState.AppendNextState(finalState)
 	return startingState
@@ -84,7 +83,7 @@ func buildParenthesesContentStates(currentState *state.State, regex []rune, open
 	innerContent := regex[openParPosition+1 : rightParenthesis]
 	buildStateMachine(innerContent, openParState, closingParState)
 	currentState.AppendNextState(openParState)
-	return closingParState, rightParenthesis
+	return closingParState, rightParenthesis + 1
 }
 
 func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosition int) (*state.State, int) {
@@ -185,5 +184,16 @@ func buildNewSetState(currentState *state.State, regex []rune, pos int) (*state.
 	}
 	currentState.AppendNextState(&newState)
 	currentState = &newState
-	return currentState, rightBracket
+	return currentState, rightBracket + 1
+}
+
+func applyBackslashEscaping(regex []rune, pos int, currentState *state.State) (*state.State, int) {
+	if pos >= len(regex)-1 {
+		panic("Unexpected EOF after \\.")
+	}
+	pos++
+	escapedChar := regex[pos]
+	pos++
+	currentState = createAncConcatNewCharState(currentState, escapedChar)
+	return currentState, pos
 }
