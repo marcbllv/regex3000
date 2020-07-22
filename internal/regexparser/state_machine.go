@@ -3,6 +3,8 @@ package regexparser
 import (
 	"fmt"
 
+	"github.com/marcbllv/regex3000/internal/regexparser/parse"
+
 	"github.com/marcbllv/regex3000/internal/regexparser/state"
 )
 
@@ -24,23 +26,22 @@ func buildStateMachine(regex []rune, startingState *state.State, finalState *sta
 		char := regex[pos]
 		switch char {
 		case '\\':
-			if pos < len(regex)-1 {
-				escapedChar := regex[pos+1]
-				currentState = createAncConcatNewCharState(currentState, escapedChar)
-				pos++
-			}
-			// todo: raise error if pos == len(regex) - 1
+			currentState, pos = applyBackslashEscaping(regex, pos, currentState)
 		case '|':
 			buildStateMachine(regex[pos+1:], startingState, finalState)
 			pos = len(regex) // to end the for loop
 		case '?':
 			currentState = applyQuestionMarkOperator(currentState)
+			pos++
 		case '+':
 			currentState = applyPlusOperator(currentState)
+			pos++
 		case '*':
 			currentState = applyStarOperator(currentState)
+			pos++
 		case '.':
 			currentState = applyMatchAny(currentState)
+			pos++
 		case '(':
 			currentState, pos = buildParenthesesContentStates(currentState, regex, pos)
 		case '{':
@@ -49,8 +50,8 @@ func buildStateMachine(regex []rune, startingState *state.State, finalState *sta
 			currentState, pos = buildNewSetState(currentState, regex, pos)
 		default:
 			currentState = createAncConcatNewCharState(currentState, char)
+			pos++
 		}
-		pos++
 	}
 	currentState.AppendNextState(finalState)
 	return startingState
@@ -82,15 +83,13 @@ func buildParenthesesContentStates(currentState *state.State, regex []rune, open
 	innerContent := regex[openParPosition+1 : rightParenthesis]
 	buildStateMachine(innerContent, openParState, closingParState)
 	currentState.AppendNextState(openParState)
-	return closingParState, rightParenthesis
+	return closingParState, rightParenthesis + 1
 }
 
 func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosition int) (*state.State, int) {
-	rightBrace := findMatchingBrace(regex, openBracePosition)
-	innerContent := regex[openBracePosition+1 : rightBrace]
-	min, max := parseBraceContent(innerContent)
+	rangeQuantifier, currentPosition := parse.ParseBraces(regex, openBracePosition)
 	initialState := currentState
-	for i := 0; i < max-1; i++ {
+	for i := 0; i < rangeQuantifier.High-1; i++ {
 		copiedStarting := currentState.Copy()
 		currentState.AppendNextState(copiedStarting)
 		if copiedStarting.MatchingState == nil {
@@ -99,13 +98,13 @@ func buildNewBracesStates(currentState *state.State, regex []rune, openBracePosi
 			currentState = copiedStarting.MatchingState
 		}
 
-		if i < max-min {
+		if i < rangeQuantifier.High-rangeQuantifier.Low {
 			for _, prevInitState := range initialState.GetPreviousStates() {
 				prevInitState.AppendNextState(currentState)
 			}
 		}
 	}
-	return currentState, rightBrace
+	return currentState, currentPosition
 }
 
 func applyQuestionMarkOperator(currentState *state.State) *state.State {
@@ -185,5 +184,16 @@ func buildNewSetState(currentState *state.State, regex []rune, pos int) (*state.
 	}
 	currentState.AppendNextState(&newState)
 	currentState = &newState
-	return currentState, rightBracket
+	return currentState, rightBracket + 1
+}
+
+func applyBackslashEscaping(regex []rune, pos int, currentState *state.State) (*state.State, int) {
+	if pos >= len(regex)-1 {
+		panic("Unexpected EOF after \\.")
+	}
+	pos++
+	escapedChar := regex[pos]
+	pos++
+	currentState = createAncConcatNewCharState(currentState, escapedChar)
+	return currentState, pos
 }
